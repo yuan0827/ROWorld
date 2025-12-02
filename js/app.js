@@ -25,7 +25,7 @@ const App = {
         this.loadLocalState();
         this.initFirebase();
         this.updateAdminUI();
-        this.populateBaseJobSelect();
+        this.populateJobSelects(); // (FIX) 修正初始化時填入選單
         this.switchTab('home');
     },
 
@@ -258,7 +258,23 @@ const App = {
         });
     },
 
-    populateBaseJobSelect: function() { const s = document.getElementById('baseJobSelect'); if(s) { s.innerHTML = '<option value="" disabled selected>選擇職業</option>'; Object.keys(JOB_STRUCTURE).forEach(j => s.innerHTML += `<option value="${j}">${j}</option>`); } },
+    // (FIX) 修正：填充職業選單，同時處理 #baseJobSelect (Modal) 和 #filterJob (成員名冊)
+    populateJobSelects: function() { 
+        const baseSelect = document.getElementById('baseJobSelect'); 
+        const filterSelect = document.getElementById('filterJob');
+        
+        if(baseSelect) {
+            baseSelect.innerHTML = '<option value="" disabled selected>選擇職業</option>'; 
+            Object.keys(JOB_STRUCTURE).forEach(j => baseSelect.innerHTML += `<option value="${j}">${j}</option>`); 
+        }
+
+        if(filterSelect) {
+            filterSelect.innerHTML = '<option value="all">所有職業</option>'; 
+            Object.keys(JOB_STRUCTURE).forEach(j => filterSelect.innerHTML += `<option value="${j}">${j}</option>`); 
+        }
+    },
+    populateBaseJobSelect: function() { this.populateJobSelects(); }, // 相容舊呼叫
+
     updateSubJobSelect: function() {
         const b = document.getElementById('baseJobSelect').value, s = document.getElementById('subJobSelect');
         s.innerHTML = '<option value="" disabled selected>選擇流派</option>';
@@ -338,7 +354,7 @@ const App = {
         const grid = document.getElementById('squadGrid');
         const emptyMsg = document.getElementById('noSquadsMsg');
 
-        // GVG 外部清單篩選器 (保持原樣)
+        // GVG 外部清單篩選器
         const filterContainer = document.createElement('div');
         filterContainer.className = "col-span-1 lg:col-span-2 flex gap-2 mb-2 overflow-x-auto pb-1";
         const filters = [
@@ -471,10 +487,10 @@ const App = {
         document.getElementById('memberSearch').value = '';
         document.getElementById('squadModalTitle').innerText = id ? '編輯隊伍' : '新增隊伍';
 
-        // (NEW) 重置彈窗篩選器
+        // 重置彈窗篩選器
         this.currentModalRoleFilter = 'all';
 
-        // (NEW) 動態注入篩選按鈕 (如果還沒插入過)
+        // 動態注入篩選按鈕
         const searchInput = document.getElementById('memberSearch');
         if (searchInput && !document.getElementById('modalFilterContainer')) {
             const filterDiv = document.createElement('div');
@@ -495,7 +511,6 @@ const App = {
                     ${f.label}
                 </button>
             `).join('');
-            // 插入在 search input 的父層 label 之後
             searchInput.parentNode.insertAdjacentElement('afterend', filterDiv);
         }
 
@@ -503,13 +518,20 @@ const App = {
             const g = this.groups.find(g => g.id === id);
             document.getElementById('squadName').value = g.name; document.getElementById('squadNote').value = g.note;
             document.getElementById('deleteSquadBtnContainer').innerHTML = `<button type="button" onclick="app.deleteSquad('${id}')" class="text-red-500 text-sm hover:underline">解散</button>`;
+            
+            // 載入成員與隊長
             this.currentSquadMembers = g.members.map(m => typeof m === 'string' ? {id: m, status: 'pending'} : m);
+            // 注意：要先有 members 才能渲染選單，渲染後才能設定 value
+            this.renderSquadMemberSelect(); 
+            const leaderSelect = document.getElementById('squadLeader');
+            if(leaderSelect) leaderSelect.value = g.leaderId || "";
         } else {
             document.getElementById('squadName').value = ''; document.getElementById('squadNote').value = '';
             document.getElementById('deleteSquadBtnContainer').innerHTML = '';
             this.currentSquadMembers = [];
+            this.renderSquadMemberSelect();
         }
-        this.renderSquadMemberSelect();
+        
         app.showModal('squadModal');
     },
 
@@ -530,7 +552,6 @@ const App = {
         let availableMembers = [...this.members];
         
         const filtered = availableMembers.filter(m => {
-            // (NEW) 彈窗內的雙重篩選：關鍵字 + 定位
             const matchSearch = (m.gameName + m.lineName + m.mainClass + (m.role||'')).toLowerCase().includes(search);
             let matchRole = true;
             if (this.currentModalRoleFilter !== 'all') {
@@ -560,6 +581,33 @@ const App = {
                 </div>
             </label>`;
         }).join('');
+
+        // (NEW) 更新隊長選單邏輯
+        this.updateLeaderOptions();
+    },
+
+    // (NEW) 更新隊長選單：只有被選中的成員才能當隊長
+    updateLeaderOptions: function() {
+        const select = document.getElementById('squadLeader');
+        if (!select) return;
+        const currentLeader = select.value;
+        
+        select.innerHTML = '<option value="">未指定</option>';
+        
+        // 從 currentSquadMembers 中讀取成員資訊並建立選項
+        this.currentSquadMembers.forEach(sm => {
+            const mem = this.members.find(m => m.id === sm.id);
+            if (mem) {
+                select.innerHTML += `<option value="${mem.id}">${mem.gameName}</option>`;
+            }
+        });
+
+        // 如果之前的隊長還在名單內，保持選取；否則重置
+        if (this.currentSquadMembers.some(sm => sm.id === currentLeader)) {
+            select.value = currentLeader;
+        } else {
+            select.value = "";
+        }
     },
     
     saveSquad: async function() {
@@ -568,12 +616,13 @@ const App = {
         const type = document.getElementById('squadType').value;
         const name = document.getElementById('squadName').value;
         const note = document.getElementById('squadNote').value;
+        const leaderId = document.getElementById('squadLeader').value; // (NEW) 讀取隊長ID
         const selectedMembers = [...this.currentSquadMembers];
         
         if(!name) { alert("請輸入隊伍名稱"); return; }
         if (type === 'gvg' && selectedMembers.length !== 5) { alert("GVG 隊伍建議為 5 人 (目前: " + selectedMembers.length + ")"); }
         
-        const squadData = { name, note, members: selectedMembers, type };
+        const squadData = { name, note, members: selectedMembers, type, leaderId }; // (NEW) 存入 leaderId
         if (id) {
             if (this.mode === 'firebase') await this.db.collection(COLLECTION_NAMES.GROUPS).doc(id).update(squadData); 
             else { const idx = this.groups.findIndex(g => g.id === id); if(idx !== -1) { this.groups[idx] = { ...this.groups[idx], ...squadData }; this.saveLocal('groups'); } }
@@ -747,13 +796,20 @@ const App = {
         this.showModal('historyModal');
     },
     
-    // 複製邏輯 (智慧替補替換)
+    // 複製邏輯 (智慧替補替換 + 隊長顯示)
     copyText: function(el, text) { navigator.clipboard.writeText(text).then(() => { el.classList.add('copied'); setTimeout(() => el.classList.remove('copied'), 1500); }).catch(() => alert("複製失敗")); },
     copySquadList: function(gid) {
         let id = gid || document.getElementById('squadId').value; if(!id) return;
         const g = this.groups.find(g => g.id === id);
         
-        const txt = `【${g.name}】\n` + g.members.map(m => {
+        // 取得隊長名稱
+        const leaderMem = g.leaderId ? this.members.find(m => m.id === g.leaderId) : null;
+        const leaderName = leaderMem ? leaderMem.gameName : '未指定';
+
+        // 標題格式更新
+        let txt = `【${g.name}】 - 隊長：${leaderName}\n`;
+        
+        txt += g.members.map(m => {
             const isObj = typeof m !== 'string';
             const originalId = isObj ? m.id : m;
             let targetId = originalId;
