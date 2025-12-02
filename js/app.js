@@ -140,7 +140,6 @@ const SEED_GROUPS = [];
 
 // =======================================================
 // [START] 自動連線程式碼：硬編碼 Firebase 設定檔
-// ** 請注意：這段設定是硬編碼的，網站將預設使用它來連線 Firebase **
 // =======================================================
 const __firebase_config = JSON.stringify({
   "apiKey": "AIzaSyCxVEcgftiu7qmHhgLV-XaLzf6naBhaf-k",
@@ -185,6 +184,7 @@ const App = {
         this.switchTab('home'); 
     },
     
+    // ... (App.sortMembers 函式)
     sortMembers: function(membersArray) {
         return membersArray.sort((a, b) => {
             const idA = a.id;
@@ -202,6 +202,7 @@ const App = {
         });
     },
 
+    // ... (App.initFirebase 函式)
     initFirebase: async function(config) {
         try {
             if (!firebase.apps.length) firebase.initializeApp(config);
@@ -221,6 +222,7 @@ const App = {
         } catch (e) { console.error("Firebase Init Failed", e); this.initDemoMode(); }
     },
 
+    // ... (App.initDemoMode 函式)
     initDemoMode: function() {
         this.mode = 'demo';
         const storedMem = localStorage.getItem('row_local_members'); const storedGrp = localStorage.getItem('row_local_groups');
@@ -241,13 +243,15 @@ const App = {
         this.render();
     },
 
+    // ... (App.seedFirebaseMembers 函式)
     seedFirebaseMembers: async function() {
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'row-guild-app';
         const batch = this.db.batch();
-        SEED_DATA.forEach(item => { const ref = this.db.collection('artifacts').doc(appId).collection('public').doc('data').collection(this.collectionMembers).doc(); batch.set(ref, item); });
+        SEED_DATA.forEach(item => { const ref = this.db.collection('artifacts').doc(appId).collection('public').doc('data').collection(this.collectionMembers).doc(item.id); batch.set(ref, item); }); // <-- 注意: 這裡已修改為使用 item.id 作為 doc ID
         await batch.commit();
     },
 
+    // ... (App.saveLocal 函式)
     saveLocal: function() {
         if (this.mode === 'demo') { 
             localStorage.setItem('row_local_members', JSON.stringify(this.members)); 
@@ -257,6 +261,7 @@ const App = {
         }
     },
     
+    // ... (App.logChange, App.showHistoryModal, App.openLoginModal, App.handleLogin, App.updateAdminUI, App.switchTab, App.handleMainAction 函式)
     loadHistory: function() {
         if (this.mode === 'demo') {
             const storedHistory = localStorage.getItem('row_mod_history');
@@ -436,10 +441,30 @@ const App = {
             this.saveLocal(); 
         }
     },
+
+    // =======================================================
+    // ** 【修復重點】App.updateMember 函式 **
+    // 解決 ID 衝突導致的更新失敗，並確保 Modal 關閉
+    // =======================================================
     updateMember: async function(id, member) {
         if (this.mode === 'firebase') { 
             const appId = typeof __app_id !== 'undefined' ? __app_id : 'row-guild-app'; 
-            await this.db.collection('artifacts').doc(appId).collection('public').doc('data').collection(this.collectionMembers).doc(id).update(member); 
+            const docRef = this.db.collection('artifacts').doc(appId).collection('public').doc('data').collection(this.collectionMembers).doc(id);
+
+            try {
+                // 嘗試更新現有文件
+                await docRef.update(member); 
+            } catch (error) {
+                // 如果是 "找不到文件" 錯誤 (常見於首次同步後的 ID 衝突)，則改為 set/add
+                if (error.code === 'not-found' || error.message.includes('No document to update')) {
+                     console.warn(`Attempted update failed for ID ${id}. Switching to set/add.`);
+                     // 執行 set 操作，若文件不存在則創建它 (用 SEED_DATA 提供的 ID)
+                     await docRef.set(member); 
+                } else {
+                    // 如果是其他錯誤，則拋出
+                    throw error;
+                }
+            }
         } 
         else { 
             const idx = this.members.findIndex(d => d.id === id); 
@@ -450,6 +475,8 @@ const App = {
             } 
         }
     },
+    // =======================================================
+
     deleteMember: async function(id) {
         if (!confirm("確定要刪除這位成員嗎？")) return;
         const member = this.members.find(d => d.id === id);
@@ -466,6 +493,7 @@ const App = {
         this.closeModal('editModal');
     },
 
+    // ... (App.saveSquad 函式及其餘所有函式)
     saveSquad: async function() {
         if (!['master', 'admin', 'commander'].includes(this.userRole)) {
             alert("權限不足：僅有管理人員可建立/編輯分組"); return;
