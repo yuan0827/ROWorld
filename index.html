@@ -31,68 +31,68 @@
 <body class="bg-ro-bg min-h-screen pt-4 pb-20 relative">
     <div class="bg-clouds"></div>
 
-    <header class="text-center mb-6 relative">
-        <h1 class="text-4xl font-extrabold text-white tracking-wider z-10 relative" style="font-family: 'ZCOOL KuaiLe', cursive; text-shadow: 2px 2px 0 #5850A1, 4px 4px 0 #334155;">
-            ROW Guild 
-            <span class="text-xl block font-normal text-amber-300 -mt-2">Member Roster</span>
-        </h1>
-        <div class="absolute inset-0 flex justify-center items-center overflow-hidden z-0">
-            <span class="drops-deco monster-deco absolute top-0"></span>
-            <span class="poporing-deco monster-deco absolute top-0"></span>
+    <nav class="bg-white/90 backdrop-blur border-b border-white/50 sticky top-0 z-50 px-4 py-3 flex justify-between items-center shadow-sm safe-area-top">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="app.switchTab('home')">
+            <div class="w-9 h-9 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md shadow-blue-200 border border-white font-cute">RO</div>
+            <div><h1 class="text-lg font-black text-slate-700 leading-tight tracking-tight font-cute">躺著不想動</h1></div>
         </div>
-    </header>
+        <div class="flex items-center space-x-2">
+            <button onclick="app.openLoginModal()" id="adminToggleBtn" class="p-2 text-slate-400 hover:text-blue-500 transition rounded-xl border border-transparent"><i class="fas fa-user-shield"></i></button>
+            <div id="adminControls" class="flex items-center space-x-2 hidden">
+                <button onclick="app.showHistoryModal()" class="p-2 text-slate-500 hover:text-blue-600 transition bg-blue-50 rounded-lg"><i class="fas fa-history"></i></button>
+                <button onclick="app.showModal('configModal')" class="p-2 text-slate-400 hover:text-blue-500 transition rounded-xl"><i class="fas fa-cog"></i></button>
+            </div>
+            <button onclick="app.handleMainAction()" class="bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-200 px-3 py-2 rounded-xl font-bold transition flex items-center text-sm transform active:scale-95 border-b-4 border-blue-700"><i class="fas fa-plus"></i></button>
+        </div>
+    </nav>
 
-    <main class="container mx-auto px-4 max-w-4xl z-10 relative">
-        <section class="mb-6 flex justify-between items-center bg-white/70 backdrop-blur-sm p-3 rounded-2xl shadow-xl border-4 border-white/80">
-            <div id="authStatus" class="flex items-center text-sm font-semibold text-slate-700">
-                <i class="fas fa-lock mr-2 text-red-500"></i>
-                <span class="status-text">未登入/遊客模式</span>
-            </div>
-            <div class="flex space-x-2">
-                <button onclick="app.showModal('configModal')" class="bg-yellow-500 text-white p-2 rounded-lg hover:bg-yellow-600 transition shadow-md text-sm">
-                    <i class="fas fa-database"></i>
-                </button>
-                <button onclick="app.showModal('historyModal')" class="bg-slate-700 text-white p-2 rounded-lg hover:bg-slate-800 transition shadow-md text-sm">
-                    <i class="fas fa-history"></i>
-                </button>
-            </div>
-        </section>
+    <div class="bg-white/30 backdrop-blur border-b border-white/40 sticky top-[60px] z-40" id="nav-container">
+        <div class="container mx-auto px-4 py-2 flex space-x-2 overflow-x-auto scroll-hide">
+            <button onclick="app.switchTab('home')" id="tab-home" class="nav-pill"><i class="fas fa-home mr-1"></i> 首頁</button>
+            <button onclick="app.switchTab('members')" id="tab-members" class="nav-pill"><i class="fas fa-users mr-1"></i> 名冊</button>
+            <button onclick="app.switchTab('gvg')" id="tab-gvg" class="nav-pill"><i class="fas fa-shield-alt mr-1"></i> GVG</button>
+            <button onclick="app.switchTab('groups')" id="tab-groups" class="nav-pill"><i class="fas fa-campground mr-1"></i> 固定團</button>
+            <button onclick="app.switchTab('activity')" id="tab-activity" class="nav-pill"><i class="fas fa-trophy mr-1"></i> 活動</button>
+        </div>
+    </div>
+    
+    <main class="flex-grow container mx-auto p-4 md:p-6 space-y-6 max-w-7xl safe-area-bottom">
 
-        <section class="mb-6">
-            <div class="flex justify-center bg-white/70 p-1 rounded-full shadow-lg border-4 border-white/80">
-                <button data-filter="all" class="filter-btn active w-full py-2 px-4 rounded-full text-sm font-bold text-slate-700 hover:bg-yellow-200 transition">全部</button>
-                <button data-filter="輸出" class="filter-btn w-full py-2 px-4 rounded-full text-sm font-bold text-slate-700 hover:bg-yellow-200 transition">輸出</button>
-                <button data-filter="輔助" class="filter-btn w-full py-2 px-4 rounded-full text-sm font-bold text-slate-700 hover:bg-yellow-200 transition">輔助</button>
-                <button data-filter="坦克" class="filter-btn w-full py-2 px-4 rounded-full text-sm font-bold text-slate-700 hover:bg-yellow-200 transition">坦克</button>
-                <button data-filter="待定" class="filter-btn w-full py-2 px-4 rounded-full text-sm font-bold text-slate-700 hover:bg-yellow-200 transition">待定</button>
-            </div>
-        </section>
-        
-        <section>
-            <div id="groupsContainer" class="space-y-6">
+        <div id="view-home" class="animate-fade-in relative">
+            <div class="text-center py-2 mb-2">
+                <div class="mascot-container animate-jelly">
+                    <svg viewBox="0 0 300 150" class="w-full h-full drop-shadow-2xl">
+                        <defs><linearGradient id="orangeGrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#FDBA74" /><stop offset="100%" stop-color="#EA580C" /></linearGradient></defs>
+                        <text x="50%" y="60%" text-anchor="middle" dominant-baseline="middle" font-family="'ZCOOL KuaiLe', sans-serif" font-weight="900" font-size="85" stroke="#431407" stroke-width="14" stroke-linejoin="round" fill="#431407">躺平</text>
+                        <text x="50%" y="60%" text-anchor="middle" dominant-baseline="middle" font-family="'ZCOOL KuaiLe', sans-serif" font-weight="900" font-size="85" fill="url(#orangeGrad)" stroke="#FFF7ED" stroke-width="4">躺平</text>
+                        <path d="M90,45 Q110,35 130,45" fill="none" stroke="white" stroke-width="5" stroke-linecap="round" opacity="0.6" />
+                        <path d="M180,45 Q200,35 220,45" fill="none" stroke="white" stroke-width="5" stroke-linecap="round" opacity="0.6" />
+                        <text x="240" y="30" font-size="30" font-weight="bold" fill="#3B82F6" stroke="white" stroke-width="1"><animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite"/><animate attributeName="y" values="30;10" dur="2s" repeatCount="indefinite"/>Z</text>
+                    </svg>
                 </div>
-
-            <div id="unassignedContainer" class="mt-8">
-                <h2 class="text-xl font-bold text-slate-700 mb-3 border-b-2 border-dashed border-slate-300 pb-2">
-                    <i class="fas fa-user-times mr-2 text-red-500"></i>
-                    未分組成員 (<span id="unassignedCount">0</span>)
-                </h2>
-                <div id="unassignedMembers" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    </div>
             </div>
-            
-            <div id="adminActions" class="fixed bottom-4 right-4 space-y-2 hidden">
-                <button onclick="app.showModal('memberModal')" class="bg-pink-600 text-white w-14 h-14 rounded-full shadow-xl hover:bg-pink-700 transition transform hover:scale-105" title="新增成員">
-                    <i class="fas fa-user-plus text-xl"></i>
-                </button>
-                <button onclick="app.showModal('groupModal')" class="bg-indigo-600 text-white w-14 h-14 rounded-full shadow-xl hover:bg-indigo-700 transition transform hover:scale-105" title="新增隊伍">
-                    <i class="fas fa-users text-xl"></i>
-                </button>
+            <div class="game-container max-w-md mx-auto">
+                <div class="poring-deco drops-deco"></div><div class="poring-deco poporing-deco"></div>
+                <div onclick="app.switchTab('members')" class="ro-menu-btn group"><div class="icon-box"><i class="fas fa-book-open"></i></div><div class="ro-btn-content"><h3>成員名冊</h3><p>Guild Members</p></div></div>
+                <div onclick="app.switchTab('gvg')" class="ro-menu-btn btn-gvg group"><div class="icon-box"><i class="fas fa-shield-alt"></i></div><div class="ro-btn-content"><h3>GVG 分組</h3><p>War of Emperium</p></div></div>
+                <div onclick="app.switchTab('groups')" class="ro-menu-btn btn-grp group"><div class="icon-box"><i class="fas fa-fire"></i></div><div class="ro-btn-content"><h3>固定團</h3><p>Dungeons & Party</p></div></div>
+                <div onclick="app.switchTab('activity')" class="ro-menu-btn group bg-yellow-50 hover:bg-yellow-100 border-yellow-500">
+                    <div class="icon-box" style="background: linear-gradient(135deg, #FDBA74 0%, #EA580C 100%); border-color: #FED7AA;"><i class="fas fa-trophy"></i></div>
+                    <div class="ro-btn-content"><h3>活動獎勵</h3><p>Event & Rewards</p></div>
+                </div>
             </div>
-        </section>
+        </div>
         
-    </main>
+        <div id="view-members" class="animate-fade-in hidden">
+             </div>
 
+        <div id="view-groups" class="hidden">
+             </div>
+
+        <div id="view-activity" class="hidden">
+             </div>
+
+    </main>
     <div id="loginModal" class="modal-overlay fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-sm shadow-2xl p-6 relative border-4 border-yellow-500">
             <h3 class="text-2xl font-bold text-yellow-700 mb-4 text-center"><i class="fas fa-unlock-alt mr-2"></i>管理員登入</h3>
@@ -105,30 +105,9 @@
         </div>
     </div>
     
-    <div id="configModal" class="modal-overlay fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto border-4 border-white">
-            <button onclick="app.closeModal('configModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-times text-xl"></i></button>
-            <h3 class="text-xl font-bold text-slate-800 mb-4 border-b-2 border-dashed border-slate-200 pb-3"><i class="fas fa-cogs mr-2 text-cyan-600"></i>資料庫連線設定</h3>
-            <p class="text-sm text-slate-600 mb-4">請貼上您的 Firebase 專案配置 JSON 內容。配置將儲存於您的瀏覽器本地。</p>
-            <div class="space-y-4">
-                <textarea id="firebaseConfigInput" rows="10" class="w-full p-3 border-2 border-slate-300 rounded-xl focus:border-cyan-500 transition font-mono text-xs" placeholder='{ "apiKey": "..." }'></textarea>
-                <div class="flex justify-between items-center"><button onclick="app.resetToDemo()" class="text-red-400 text-xs hover:text-red-600">重置資料</button><button onclick="app.saveConfig()" class="px-4 py-2 bg-slate-800 text-white rounded-xl hover:bg-black transition shadow-lg">連線</button></div>
-            </div>
-        </div>
-    </div>
-    
-    <div id="historyModal" class="modal-overlay fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto border-4 border-white">
-            <button onclick="app.closeModal('historyModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-times text-xl"></i></button>
-            <h3 class="text-xl font-bold text-slate-800 mb-4 border-b-2 border-dashed border-slate-200 pb-3"><i class="fas fa-history mr-2 text-yellow-600"></i>修改紀錄</h3>
-            <div id="historyList" class="space-y-3">
-                <p class="text-center text-slate-400">載入中...</p>
-            </div>
-        </div>
-    </div>
-    
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script> <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script> 
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     
     <script src="./js/config.js"></script> 
     <script type="module" src="./js/app.js"></script> 
