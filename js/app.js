@@ -1,4 +1,4 @@
-// ** 1. Tailwind Configuration (必須放在最前面，讓 CDN 讀取擴展設置) **
+// ** 1. Tailwind Configuration **
 tailwind.config = {
     theme: {
         extend: {
@@ -68,7 +68,7 @@ const SEED_DATA = [
     { lineName: "Lam 🦄", gameName: "孤芳自賞", mainClass: "獵人(陷阱)", role: "輸出", rank: "成員", intro: "" },
     { lineName: "alan", gameName: "小櫻花", mainClass: "武僧", role: "輔助", rank: "成員", intro: "待領養孤兒" },
     { lineName: "董宜坤", gameName: "去去彈匣清空", mainClass: "槍手", role: "輸出", rank: "成員", intro: "" },
-    { lineName: "阿智", gameName: "恐龍跌倒", mainClass: "獵人(鳥)", role: "待定", rank: "成員", intro: "待領養孤兒" },
+    { lineName: "阿智", gameName: "恐龍跌倒", mainClass: "獵人(鳥)", role: "待定", rank: "成員", intro: "" },
     { lineName: "佳慶", gameName: "襪子髒髒", mainClass: "神官(讚美)", role: "輔助", rank: "成員", intro: "" },
     { lineName: "騰億", gameName: "魅力四射", mainClass: "獵人(鳥)", role: "待定", rank: "成員", intro: "" },
     { lineName: "Xian", gameName: "沐瑀", mainClass: "", role: "待定", rank: "成員", intro: "" },
@@ -147,7 +147,7 @@ const __firebase_config = JSON.stringify({
   "projectId": "ro123-aae1e",
   "storageBucket": "ro123-aae1e.firebasestorage.app",
   "messagingSenderId": "401692984816",
-  "appId": "1:401692984816:web:711dacb2277b52fb7d0935",
+  "appId: "1:401692984816:web:711dacb2277b52fb7d0935",
   "measurementId": "G-SVYZGQZB83"
 });
 
@@ -180,7 +180,6 @@ const App = {
         this.setupListeners(); this.updateAdminUI(); this.switchTab('home'); 
     },
     
-    // ** 排序：依新增時間排序，舊的在先，新的在後 **
     sortMembers: function(membersArray) {
         return membersArray.sort((a, b) => {
             const getTime = (m) => {
@@ -329,7 +328,7 @@ const App = {
         document.getElementById('tab-'+tab)?.classList.add('active');
         
         if(tab === 'gvg' || tab === 'groups') document.getElementById('groupSearchInput').value = '';
-        if(tab === 'activities') document.getElementById('claimSearch').value = '';
+        if (tab === 'activities') document.getElementById('claimSearch').value = '';
 
         if(tab === 'gvg') { document.getElementById('groupViewTitle').innerText = 'GVG 攻城戰分組'; document.getElementById('squadModalTitle').innerText = 'GVG 分組管理'; } 
         else if(tab === 'groups') { document.getElementById('groupViewTitle').innerText = '固定團列表'; document.getElementById('squadModalTitle').innerText = '固定團管理'; }
@@ -698,7 +697,7 @@ const App = {
 
         grid.innerHTML = this.activities.map(act => {
             const claimedCount = (act.claimed || []).length;
-            const total = this.members.length || 1; 
+            const total = (act.winners || []).length || 1; 
             const progress = Math.round((claimedCount / total) * 100) || 0;
             const rewardsDisplay = act.rewards || '無自訂獎品';
             
@@ -750,9 +749,7 @@ const App = {
         const rewards = document.getElementById('inputActRewards').value.trim();
         if(!title) { alert("請輸入標題"); return; }
         
-        // 獲取所有選中的得獎者 ID
-        const selectedWinners = Array.from(document.querySelectorAll('#winnerListContainer input:checked'))
-                                     .map(input => input.value);
+        const selectedWinners = Array.from(document.querySelectorAll('#winnerListContainer input:checked')).map(input => input.value);
 
         const actData = { title, desc, rewards, winners: selectedWinners, updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
         if(!id) { actData.createdAt = firebase.firestore.FieldValue.serverTimestamp(); actData.claimed = []; }
@@ -774,7 +771,6 @@ const App = {
     renderWinnerListEdit: function(currentWinners) {
         if (this.userRole !== 'master' && this.userRole !== 'admin') return '<div class="text-red-500 text-xs">僅會長/管理員可設定得獎者</div>';
         
-        // ** 優化：先排序成員列表，讓會長容易找到人 **
         const sortedMembers = [...this.members].sort((a,b) => (a.gameName || '').localeCompare(b.gameName || ''));
         
         return sortedMembers.map(m => {
@@ -798,12 +794,11 @@ const App = {
         this.renderClaimList(); app.showModal('activityModal');
     },
     
-    // ** 核心邏輯：只顯示得獎者名單 **
     renderClaimList: function() {
         const act = this.activities.find(a => a.id === document.getElementById('actId').value); if(!act) return;
         const search = document.getElementById('claimSearch').value.toLowerCase(); 
         const claimedIds = act.claimed || [];
-        const winnerIds = act.winners || []; // 獲取得獎者名單
+        const winnerIds = act.winners || [];
         
         document.getElementById('claimCount').innerText = claimedIds.length; 
         document.getElementById('totalMemberCount').innerText = winnerIds.length;
@@ -829,7 +824,6 @@ const App = {
     toggleClaim: async function(memberId) {
         const actId = document.getElementById('actId').value; const act = this.activities.find(a => a.id === actId); if(!act) return;
         
-        // 檢查權限：只有得獎者名單中的人才能被操作
         if (!(act.winners || []).includes(memberId)) {
              alert("非指定得獎者，無法領取。");
              return;
