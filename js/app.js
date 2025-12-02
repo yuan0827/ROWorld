@@ -14,7 +14,9 @@ const { FIREBASE_CONFIG, COLLECTION_NAMES, SEED_DATA, SEED_GROUPS, SEED_ACTIVITI
 const App = {
     db: null, auth: null,
     members: [], groups: [], activities: [], history: [],
-    currentTab: 'home', currentFilter: 'all', currentJobFilter: 'all',
+    currentTab: 'home', 
+    currentFilter: 'all', currentJobFilter: 'all', // 名冊頁面的篩選
+    currentSquadRoleFilter: 'all', // (NEW) GVG/隊伍頁面的篩選
     mode: 'demo', userRole: 'guest',
     currentSquadMembers: [], currentActivityWinners: [], tempWinnerSelection: [],
 
@@ -233,9 +235,16 @@ const App = {
             </div>`;
     },
 
-    // Filter & Job & Modal Logic (省略部分重複代碼，保持與原版一致邏輯)
+    // Filter & Job & Modal Logic
     setFilter: function(f) { this.currentFilter = f; document.querySelectorAll('.filter-btn').forEach(b => b.className = (b.innerText.includes(f==='all'?'全部':f)||(f==='坦'&&b.innerText.includes('坦克'))||(f==='待定'&&b.innerText.includes('待定'))) ? "px-4 py-1.5 rounded-full text-sm font-bold bg-slate-800 text-white transition whitespace-nowrap filter-btn active shadow-md" : "px-4 py-1.5 rounded-full text-sm font-bold bg-white text-slate-600 border border-slate-200 hover:bg-blue-50 transition whitespace-nowrap filter-btn"); this.renderMembers(); },
     setJobFilter: function(j) { this.currentJobFilter = j; this.renderMembers(); },
+    
+    // (NEW) GVG Role Filter Logic
+    setSquadRoleFilter: function(f) { 
+        this.currentSquadRoleFilter = f; 
+        this.renderSquads(); 
+    },
+
     populateBaseJobSelect: function() { const s = document.getElementById('baseJobSelect'); if(s) { s.innerHTML = '<option value="" disabled selected>選擇職業</option>'; Object.keys(JOB_STRUCTURE).forEach(j => s.innerHTML += `<option value="${j}">${j}</option>`); } },
     updateSubJobSelect: function() {
         const b = document.getElementById('baseJobSelect').value, s = document.getElementById('subJobSelect');
@@ -304,23 +313,62 @@ const App = {
                 if (g.name.toLowerCase().includes(search)) return true;
                 return g.members.some(m => {
                     const mem = this.members.find(x => x.id === (typeof m === 'string' ? m : m.id));
-                    return mem && (mem.gameName.toLowerCase().includes(search) || (mem.mainClass||'').toLowerCase().includes(search));
+                    return mem && (
+                        mem.gameName.toLowerCase().includes(search) || 
+                        (mem.mainClass||'').toLowerCase().includes(search) ||
+                        // 新增搜尋定位的功能
+                        (mem.role||'').includes(search)
+                    );
                 });
             });
         }
 
         const grid = document.getElementById('squadGrid');
         const emptyMsg = document.getElementById('noSquadsMsg');
-        if (visibleGroups.length === 0) { grid.innerHTML = ''; emptyMsg.classList.remove('hidden'); return; }
+
+        // (NEW) 插入篩選按鈕區塊
+        const filterContainer = document.createElement('div');
+        filterContainer.className = "col-span-1 lg:col-span-2 flex gap-2 mb-2 overflow-x-auto pb-1";
+        const filters = [
+            {id: 'all', label: '全部', color: 'bg-slate-800 text-white'},
+            {id: '輸出', label: '輸出', color: 'bg-red-500 text-white'},
+            {id: '輔助', label: '輔助', color: 'bg-green-500 text-white'},
+            {id: '坦', label: '坦克', color: 'bg-blue-500 text-white'}
+        ];
+        
+        filterContainer.innerHTML = filters.map(f => {
+            const isActive = this.currentSquadRoleFilter === f.id;
+            // 未選中時使用白色樣式，選中時使用定義的顏色
+            const styleClass = isActive ? f.color : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50';
+            return `<button onclick="app.setSquadRoleFilter('${f.id}')" class="px-4 py-1.5 rounded-full text-sm font-bold shadow-sm transition whitespace-nowrap active:scale-95 ${styleClass}">${f.label}</button>`;
+        }).join('');
+
+        // 將 grid 清空前，先清空內容
+        grid.innerHTML = '';
+        
+        // 如果有隊伍，先把篩選器插在最上面 (透過 JS 操作 DOM 比較安全)
+        if (visibleGroups.length > 0 || this.currentSquadRoleFilter !== 'all') {
+             // 這裡我們直接把 HTML 拼接到 grid.innerHTML 會有 layout 問題，
+             // 因為 grid 是 grid-cols-2。
+             // 解決方案：將 filterContainer 插入到 grid 的 parent 的 before? 
+             // 為了簡單起見，我們將 filter 按鈕直接放在 groupViewTitle 旁邊的 toolbar 或是 renderSquads 內部上方
+             
+             // 修正：我們把 filter HTML 放在 grid 內容的最前面，並讓它佔滿兩欄
+             grid.insertAdjacentHTML('beforeend', filterContainer.outerHTML);
+        }
+
+        if (visibleGroups.length === 0) { 
+            // 保持原本邏輯
+            emptyMsg.classList.remove('hidden'); 
+            return; 
+        }
         emptyMsg.classList.add('hidden');
 
-        grid.innerHTML = visibleGroups.map(group => {
+        const groupsHTML = visibleGroups.map(group => {
             const groupMembers = (group.members || []).map(m => {
                 const id = typeof m === 'string' ? m : m.id;
-                // 若物件中無 status 預設為 pending, subId 預設 null
                 const status = typeof m === 'string' ? 'pending' : (m.status || 'pending');
                 const subId = typeof m === 'string' ? null : (m.subId || null);
-                
                 const mem = this.members.find(x => x.id === id);
                 return mem ? { ...mem, status, subId } : null;
             }).filter(x => x);
@@ -329,6 +377,15 @@ const App = {
             const isGVG = type === 'gvg';
             
             const list = groupMembers.map(m => {
+                // (NEW) 這裡執行定位篩選邏輯
+                // 如果目前的篩選器不是 'all'，且成員的定位不包含篩選關鍵字，則不顯示 (回傳空字串)
+                if (this.currentSquadRoleFilter !== 'all') {
+                    // 特殊處理：'坦' 可能在 role 寫 '坦' 或 '坦克'，或 mainClass 有 '坦'
+                    const filterKey = this.currentSquadRoleFilter;
+                    const match = m.role.includes(filterKey) || (filterKey === '坦' && m.mainClass.includes('坦'));
+                    if (!match) return ''; // 隱藏此人
+                }
+
                 const job = (m.mainClass || '').split('(')[0];
                 const roleColor = m.role.includes('輸出')?'text-red-500':m.role.includes('輔助')?'text-green-500':'text-blue-500';
                 
@@ -369,7 +426,6 @@ const App = {
                         let statusText = m.status === 'ready' ? '<span class="text-green-500 text-xs font-bold">Ready</span>' : 
                                          m.status === 'leave' ? '<span class="text-yellow-500 text-xs font-bold">請假</span>' : 
                                          '<span class="text-red-400 text-xs">...</span>';
-                        // 若有替補顯示替補名字
                         if (m.status === 'leave' && m.subId) {
                             const subMem = this.members.find(x => x.id === m.subId);
                             if(subMem) statusText += ` <span class="text-blue-500 text-xs">⇋ ${subMem.gameName}</span>`;
@@ -425,10 +481,13 @@ const App = {
                         <div><h3 class="text-xl font-bold">${group.name}</h3><p class="text-xs mt-1 italic opacity-80">${group.note||''}</p></div>
                         <div class="flex items-center">${copyBtn}${editBtn}</div>
                     </div>
-                    <div class="flex-grow p-1 overflow-y-auto max-h-80">${list.length?list:'<p class="text-sm text-slate-400 text-center py-4">無成員</p>'}</div>
+                    <div class="flex-grow p-1 overflow-y-auto max-h-80">${list.length?list:'<p class="text-sm text-slate-400 text-center py-4">無成員 (或被篩選隱藏)</p>'}</div>
                     ${footer}
                 </div>`;
         }).join('');
+
+        // 將組合好的 HTML 放入 Grid
+        grid.insertAdjacentHTML('beforeend', groupsHTML);
     },
 
     // --- GVG 狀態與替補邏輯 ---
@@ -448,8 +507,7 @@ const App = {
             else { m.status = 'leave'; } // 設為請假
         } else if (action === 'ready_toggle') {
             if (m.status === 'leave') {
-                 // 如果在請假狀態點了紅綠燈，視為取消請假並設為 Ready? 或者無效?
-                 // 這裡設定為: 取消請假並變 Ready
+                 // 如果在請假狀態點了紅綠燈，視為取消請假並設為 Ready
                  m.status = 'ready'; m.subId = null;
             } else {
                 // 紅綠切換
