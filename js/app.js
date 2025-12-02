@@ -291,7 +291,7 @@ const App = {
         this.logChange('成員刪除', `ID: ${id}`, id); this.closeModal('editModal');
     },
 
-    // --- 3. 固定團 / GVG 邏輯 (大幅修改：支援狀態切換與人數) ---
+    // --- 3. 固定團 / GVG 邏輯 ---
 
     renderSquads: function() {
         const type = this.currentTab === 'gvg' ? 'gvg' : 'groups';
@@ -317,45 +317,107 @@ const App = {
         grid.innerHTML = visibleGroups.map(group => {
             const groupMembers = (group.members || []).map(m => {
                 const id = typeof m === 'string' ? m : m.id;
+                // 若物件中無 status 預設為 pending, subId 預設 null
                 const status = typeof m === 'string' ? 'pending' : (m.status || 'pending');
+                const subId = typeof m === 'string' ? null : (m.subId || null);
+                
                 const mem = this.members.find(x => x.id === id);
-                return mem ? { ...mem, status } : null;
+                return mem ? { ...mem, status, subId } : null;
             }).filter(x => x);
 
+            // GVG 模式與 Fixed Group 模式分開渲染
+            const isGVG = type === 'gvg';
+            
             const list = groupMembers.map(m => {
-                // 狀態樣式邏輯 (請假變灰, 替補變藍)
-                let rowClass = "", statusIcon = "", statusText = "";
-                if (m.status === 'leave') { rowClass = "row-leave"; statusIcon = "fa-triangle-exclamation text-slate-500"; statusText = "請假"; }
-                else if (m.status === 'sub') { rowClass = "row-sub"; statusIcon = "fa-sync-alt text-blue-500"; statusText = "替補"; }
-                else if (m.status === 'ready') { rowClass = "row-ready"; statusIcon = "fa-check-circle text-green-500"; statusText = "Ready"; }
-                else { statusIcon = "fa-circle-question text-slate-300"; statusText = "未定"; }
+                const job = (m.mainClass || '').split('(')[0];
+                const roleColor = m.role.includes('輸出')?'text-red-500':m.role.includes('輔助')?'text-green-500':'text-blue-500';
+                
+                // --- GVG 專屬介面 (燈號 + 替補下拉) ---
+                let actionUI = "";
+                let rowClass = "";
+                
+                if (isGVG) {
+                    if (m.status === 'leave') rowClass = "row-leave";
+
+                    if (canEdit) {
+                        // 替補選單 (只在請假時顯示)
+                        let subSelectUI = "";
+                        if (m.status === 'leave') {
+                            const otherMembers = this.members.filter(x => !groupMembers.some(gm => gm.id === x.id) || x.id === m.subId); // 簡單過濾
+                            const options = otherMembers.map(om => `<option value="${om.id}" ${om.id === m.subId ? 'selected' : ''}>${om.gameName}</option>`).join('');
+                            subSelectUI = `
+                            <select class="sub-select" onchange="app.updateGvgSub('${group.id}', '${m.id}', this.value)" onclick="event.stopPropagation()">
+                                <option value="">選擇替補...</option>
+                                ${options}
+                            </select>`;
+                        }
+
+                        // 燈號按鈕 (紅綠燈 + 黃燈)
+                        actionUI = `
+                            <div class="flex items-center gap-1">
+                                ${subSelectUI}
+                                <div class="gvg-light bg-light-yellow ${m.status === 'leave' ? 'active' : ''}" 
+                                     title="請假 (Leave)" 
+                                     onclick="event.stopPropagation(); app.toggleGvgStatus('${group.id}', '${m.id}', 'leave')"></div>
+                                <div class="gvg-light ${m.status === 'ready' ? 'bg-light-green active' : 'bg-light-red'}" 
+                                     title="${m.status === 'ready' ? '準備完成 (Ready)' : '未確認 (Pending)'}" 
+                                     onclick="event.stopPropagation(); app.toggleGvgStatus('${group.id}', '${m.id}', 'ready_toggle')"></div>
+                            </div>
+                        `;
+                    } else {
+                        // 唯讀模式顯示狀態
+                        let statusText = m.status === 'ready' ? '<span class="text-green-500 text-xs font-bold">Ready</span>' : 
+                                         m.status === 'leave' ? '<span class="text-yellow-500 text-xs font-bold">請假</span>' : 
+                                         '<span class="text-red-400 text-xs">...</span>';
+                        // 若有替補顯示替補名字
+                        if (m.status === 'leave' && m.subId) {
+                            const subMem = this.members.find(x => x.id === m.subId);
+                            if(subMem) statusText += ` <span class="text-blue-500 text-xs">⇋ ${subMem.gameName}</span>`;
+                        }
+                        actionUI = `<div>${statusText}</div>`;
+                    }
+                } else {
+                    // --- Fixed Group 優化介面 (純名單) ---
+                    actionUI = `<span class="text-xs text-slate-300 font-mono">ID:${m.id.slice(-3)}</span>`;
+                }
 
                 return `
-                <div class="flex items-center justify-between text-sm py-2 border-b border-slate-200 last:border-0 hover:bg-slate-50 px-3 transition ${rowClass}">
-                    <div class="flex items-center gap-2 min-w-0">
-                        <span class="text-xs font-bold ${m.role.includes('輸出')?'text-red-500':m.role.includes('輔助')?'text-green-500':'text-blue-500'}">[${m.role.substring(0,1)}]</span>
-                        <span class="text-slate-800 font-bold truncate">${m.gameName}</span>
+                <div class="flex items-center justify-between text-sm py-2.5 border-b border-slate-100 last:border-0 hover:bg-slate-50 px-3 transition ${rowClass}">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold ${roleColor}">${m.role.substring(0,1)}</div>
+                        <div class="flex flex-col min-w-0">
+                            <span class="text-slate-800 font-bold truncate member-name">${m.gameName}</span>
+                            <span class="text-[10px] text-slate-400 font-mono">${job}</span>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs text-slate-500 font-mono hidden md:inline">${(m.mainClass||'').split('(')[0]}</span>
-                        ${canEdit ? 
-                            `<div class="cursor-pointer hover:scale-110 transition px-2 py-1 rounded hover:bg-white" 
-                                  onclick="event.stopPropagation(); app.toggleMemberStatus('${group.id}', '${m.id}')" title="點擊切換: 正常 -> 請假 -> 替補">
-                                <i class="fas ${statusIcon}"></i>
-                            </div>` : 
-                            `<i class="fas ${statusIcon} opacity-80"></i>`
-                        }
-                    </div>
+                    ${actionUI}
                 </div>`;
             }).join('');
                 
-            const headerClass = type === 'gvg' ? 'header squad-card-gvg-header' : 'bg-blue-50 p-4 border-b border-blue-100';
-            const cardClass = type === 'gvg' ? 'squad-card-gvg' : 'bg-white rounded-xl shadow-sm border border-blue-100';
+            const headerClass = isGVG ? 'header squad-card-gvg-header' : 'bg-blue-50 p-4 border-b border-blue-100';
+            const cardClass = isGVG ? 'squad-card-gvg' : 'bg-white rounded-xl shadow-sm border border-blue-100';
             const editBtn = canEdit ? `<button onclick="app.openSquadModal('${group.id}')" class="text-slate-400 hover:text-blue-600 p-1"><i class="fas fa-cog"></i></button>` : '';
             const copyBtn = `<button onclick="app.copySquadList('${group.id}')" class="text-slate-400 hover:text-green-600 p-1 ml-2" title="複製隊伍"><i class="fas fa-copy"></i></button>`;
 
-            const readyCount = groupMembers.filter(m => m.status === 'ready').length;
-            const leaveCount = groupMembers.filter(m => m.status === 'leave').length;
+            // 統計 (僅 GVG 顯示狀態統計)
+            let footer = "";
+            if (isGVG) {
+                const readyCount = groupMembers.filter(m => m.status === 'ready').length;
+                const leaveCount = groupMembers.filter(m => m.status === 'leave').length;
+                footer = `
+                <div class="bg-white p-3 border-t border-slate-100 flex justify-between items-center shrink-0 text-xs font-bold text-slate-500">
+                    <span>${groupMembers.length} 人</span>
+                    <div class="flex gap-2">
+                        <span class="text-green-600">🟢 ${readyCount}</span>
+                        <span class="text-yellow-600">🟡 ${leaveCount}</span>
+                    </div>
+                </div>`;
+            } else {
+                 footer = `
+                <div class="bg-white p-2 border-t border-slate-100 text-center text-xs text-slate-400">
+                    固定成員 ${groupMembers.length} 人
+                </div>`;
+            }
 
             return `
                 <div class="${cardClass} flex flex-col h-full overflow-hidden">
@@ -364,32 +426,56 @@ const App = {
                         <div class="flex items-center">${copyBtn}${editBtn}</div>
                     </div>
                     <div class="flex-grow p-1 overflow-y-auto max-h-80">${list.length?list:'<p class="text-sm text-slate-400 text-center py-4">無成員</p>'}</div>
-                    <div class="bg-white p-3 border-t border-slate-100 flex justify-between items-center shrink-0 text-xs font-bold text-slate-500">
-                        <span>共 ${groupMembers.length} 人</span>
-                        <div class="flex gap-2">
-                            <span class="text-green-600">✅ ${readyCount}</span>
-                            <span class="text-slate-400">⚠️ ${leaveCount}</span>
-                        </div>
-                    </div>
+                    ${footer}
                 </div>`;
         }).join('');
     },
 
-    toggleMemberStatus: function(groupId, memberId) {
+    // --- GVG 狀態與替補邏輯 ---
+    toggleGvgStatus: function(groupId, memberId, action) {
         if (!['master', 'admin', 'commander'].includes(this.userRole)) return;
         const group = this.groups.find(g => g.id === groupId); if(!group) return;
         const index = group.members.findIndex(m => (typeof m === 'string' ? m : m.id) === memberId);
         if (index === -1) return;
-        
-        // 狀態循環：Pending -> Ready -> Leave -> Sub -> Pending
+
+        let m = group.members[index];
+        if (typeof m === 'string') m = { id: m, status: 'pending', subId: null };
+
+        // 邏輯: action == 'leave' (切換請假開關), action == 'ready_toggle' (切換紅綠燈)
+        if (action === 'leave') {
+            // 如果當前是請假，再次點擊取消請假(變回 pending)
+            if (m.status === 'leave') { m.status = 'pending'; m.subId = null; }
+            else { m.status = 'leave'; } // 設為請假
+        } else if (action === 'ready_toggle') {
+            if (m.status === 'leave') {
+                 // 如果在請假狀態點了紅綠燈，視為取消請假並設為 Ready? 或者無效?
+                 // 這裡設定為: 取消請假並變 Ready
+                 m.status = 'ready'; m.subId = null;
+            } else {
+                // 紅綠切換
+                m.status = (m.status === 'ready') ? 'pending' : 'ready';
+            }
+        }
+
+        group.members[index] = m;
+        this.saveGroupUpdate(group);
+    },
+
+    updateGvgSub: function(groupId, memberId, subId) {
+        const group = this.groups.find(g => g.id === groupId); if(!group) return;
+        const index = group.members.findIndex(m => (typeof m === 'string' ? m : m.id) === memberId);
+        if (index === -1) return;
+
         let m = group.members[index];
         if (typeof m === 'string') m = { id: m, status: 'pending' };
         
-        const nextStatus = { 'pending': 'ready', 'ready': 'leave', 'leave': 'sub', 'sub': 'ready' };
-        m.status = nextStatus[m.status] || 'ready';
-        
+        m.subId = subId; // 儲存替補ID
         group.members[index] = m;
-        if (this.mode === 'firebase') this.db.collection(COLLECTION_NAMES.GROUPS).doc(groupId).update({ members: group.members });
+        this.saveGroupUpdate(group);
+    },
+
+    saveGroupUpdate: function(group) {
+        if (this.mode === 'firebase') this.db.collection(COLLECTION_NAMES.GROUPS).doc(group.id).update({ members: group.members });
         else this.saveLocal('groups');
     },
     
@@ -418,7 +504,7 @@ const App = {
 
     toggleSquadMember: function(id) {
         const index = this.currentSquadMembers.findIndex(m => m.id === id);
-        // 若是 GVG，限制 5 人；若是 Fixed Groups，放寬限制 (例如 12 人)
+        // GVG 限制 5 人，固定團放寬
         const limit = this.currentTab === 'gvg' ? 5 : 12;
 
         if (index > -1) { this.currentSquadMembers.splice(index, 1); } 
@@ -482,7 +568,7 @@ const App = {
         this.closeModal('squadModal');
     },
 
-    // --- 4. 活動 (Activity) 邏輯 (全新卡片 + 燈號) ---
+    // --- 4. 活動 (Activity) 邏輯 ---
 
     renderActivities: function() {
         const list = document.getElementById('activityList');
@@ -491,24 +577,21 @@ const App = {
         if(emptyMsg) emptyMsg.classList.add('hidden');
 
         list.innerHTML = this.activities.map(act => {
-            // 獎勵列表 (表格列)
             const winnersList = (act.winners || []).map((w, idx) => {
                 const mem = this.members.find(m => m.id === w.memberId);
                 const name = mem ? mem.gameName : 'Unknown';
                 const job = mem ? mem.mainClass : '-';
-                // 時間格式化
                 let timeStr = "";
                 if(w.claimedAt) {
                     const d = new Date(w.claimedAt);
                     timeStr = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
                 }
 
-                // 燈號 HTML
                 const isMaster = this.userRole === 'master';
                 const lightClass = w.claimed ? 'claimed' : 'unclaimed';
-                // 會長點擊時觸發 handleClaimReward
+                // 移除 confirm 邏輯：直接綁定點擊事件
                 const clickAction = (isMaster && !w.claimed) ? `onclick="app.handleClaimReward('${act.id}', ${idx})"` : '';
-                const titleText = w.claimed ? `已於 ${timeStr} 領取` : (isMaster ? '點擊發放獎勵' : '未領取');
+                const titleText = w.claimed ? `已於 ${timeStr} 領取` : (isMaster ? '點擊發放獎勵 (立即紀錄)' : '未領取');
 
                 return `
                 <div class="flex justify-between items-center py-3 border-b border-slate-100 last:border-0">
@@ -539,21 +622,18 @@ const App = {
 
     handleClaimReward: async function(actId, winnerIdx) {
         if(this.userRole !== 'master') return;
-        if(!confirm("確認發放獎勵？(此操作將變更為綠燈)")) return;
-
-        // 尋找活動
+        // 已移除 confirm 彈窗，直接執行
+        
         const actIndex = this.activities.findIndex(a => a.id === actId);
         if(actIndex === -1) return;
         
         let act = this.activities[actIndex];
         if(!act.winners[winnerIdx]) return;
 
-        // 更新狀態
         act.winners[winnerIdx].claimed = true;
         act.winners[winnerIdx].claimedAt = Date.now();
         act.winners[winnerIdx].claimedBy = 'Master';
 
-        // 存檔
         if (this.mode === 'firebase') {
             await this.db.collection(COLLECTION_NAMES.ACTIVITIES).doc(actId).update({ winners: act.winners });
         } else {
