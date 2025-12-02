@@ -1,944 +1,345 @@
-<main class="flex-grow container mx-auto p-4 md:p-6 space-y-6 max-w-7xl safe-area-bottom">
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RO:W 公會名冊 | 躺著不想動</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#A3D8F4">
 
-    <div id="view-home" class="animate-fade-in relative">
-        <div class="text-center py-6 mb-4">
-            <div class="mascot-container relative mx-auto w-64 h-40">
-                <svg viewBox="0 0 300 180" class="w-full h-full drop-shadow-xl filter">
-                    <defs>
-                        <linearGradient id="poringBody" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stop-color="#FDA4AF" /> <stop offset="100%" stop-color="#FB7185" /> </linearGradient>
-                        <filter id="glow">
-                            <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
-                            <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                        </filter>
-                    </defs>
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Varela+Round&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./css/styles.css"> 
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { 
+                        ro: { primary: '#4380D3', bg: '#e0f2fe' }
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="bg-ro-bg min-h-screen pt-4 pb-20 relative">
+    <div class="bg-clouds"></div>
 
-                    <ellipse cx="150" cy="155" rx="100" ry="15" fill="#000" opacity="0.1" />
+    <nav class="bg-white/90 backdrop-blur border-b border-white/50 sticky top-0 z-50 px-4 py-3 flex justify-between items-center shadow-sm safe-area-top">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="app.switchTab('home')">
+            <div class="w-9 h-9 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md shadow-blue-200 border border-white font-cute">RO</div>
+            <div><h1 class="text-lg font-black text-slate-700 leading-tight tracking-tight font-cute">躺著不想動</h1></div>
+        </div>
+        <div class="flex items-center space-x-2">
+            <button onclick="app.openLoginModal()" id="adminToggleBtn" class="p-2 text-slate-400 hover:text-blue-500 transition rounded-xl border border-transparent"><i class="fas fa-user-shield"></i></button>
+            <div id="adminControls" class="flex items-center space-x-2 hidden">
+                <button onclick="app.showHistoryModal()" class="p-2 text-slate-500 hover:text-blue-600 transition bg-blue-50 rounded-lg"><i class="fas fa-history"></i></button>
+                <button onclick="app.showModal('configModal')" class="p-2 text-slate-400 hover:text-blue-500 transition rounded-xl"><i class="fas fa-cog"></i></button>
+            </div>
+            <button onclick="app.handleMainAction()" class="bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-200 px-3 py-2 rounded-xl font-bold transition flex items-center text-sm transform active:scale-95 border-b-4 border-blue-700"><i class="fas fa-plus"></i></button>
+        </div>
+    </nav>
 
-                    <path d="M 60 150 Q 60 150, 50 150 C 30 150, 30 110, 60 90 Q 150 20, 240 90 C 270 110, 270 150, 250 150 Q 240 150, 60 150 Z" 
-                          fill="url(#poringBody)" stroke="#BE123C" stroke-width="3" stroke-linejoin="round" />
+    <div class="bg-white/30 backdrop-blur border-b border-white/40 sticky top-[60px] z-40" id="nav-container">
+        <div class="container mx-auto px-4 py-2 flex space-x-2 overflow-x-auto scroll-hide">
+            <button onclick="app.switchTab('home')" id="tab-home" class="nav-pill"><i class="fas fa-home mr-1"></i> 首頁</button>
+            <button onclick="app.switchTab('members')" id="tab-members" class="nav-pill"><i class="fas fa-users mr-1"></i> 名冊</button>
+            <button onclick="app.switchTab('gvg')" id="tab-gvg" class="nav-pill"><i class="fas fa-shield-alt mr-1"></i> GVG</button>
+            <button onclick="app.switchTab('groups')" id="tab-groups" class="nav-pill"><i class="fas fa-campground mr-1"></i> 固定團</button>
+            <button onclick="app.switchTab('activity')" id="tab-activity" class="nav-pill"><i class="fas fa-trophy mr-1"></i> 活動</button>
+        </div>
+    </div>
+    
+    <main class="flex-grow container mx-auto p-4 md:p-6 space-y-6 max-w-7xl safe-area-bottom">
 
-                    <ellipse cx="110" cy="70" rx="20" ry="10" fill="white" opacity="0.4" transform="rotate(-20 110 70)" />
+        <div id="view-home" class="animate-fade-in relative">
+            <div class="text-center py-8 mb-4">
+                <div class="mascot-container relative mx-auto w-64 h-48">
+                    <svg viewBox="0 0 200 160" class="w-full h-full drop-shadow-2xl">
+                        <ellipse cx="100" cy="145" rx="60" ry="10" fill="#000" opacity="0.15">
+                            <animate attributeName="rx" values="60;40;60" dur="3s" repeatCount="indefinite" />
+                            <animate attributeName="opacity" values="0.15;0.05;0.15" dur="3s" repeatCount="indefinite" />
+                        </ellipse>
 
-                    <g stroke="#881337" stroke-width="4" fill="none" stroke-linecap="round">
-                        <path d="M 100 115 Q 110 120, 120 115" /> <path d="M 180 115 Q 190 120, 200 115" /> </g>
-                    <path d="M 145 125 Q 150 135, 155 125" stroke="#881337" stroke-width="3" fill="none" stroke-linecap="round" />
-                    <circle cx="160" cy="135" r="3" fill="#38BDF8" opacity="0.6">
-                        <animate attributeName="cy" values="135;145;135" dur="2s" repeatCount="indefinite" />
-                        <animate attributeName="opacity" values="0.6;0;0.6" dur="2s" repeatCount="indefinite" />
-                    </circle>
+                        <g>
+                            <animateTransform attributeName="transform" type="translate" values="0,0; 0,-10; 0,0" dur="3s" repeatCount="indefinite" keyTimes="0; 0.5; 1" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1" />
+                            
+                            <path d="M 30 100 C 30 100, 20 140, 100 140 C 180 140, 170 100, 170 100 C 170 60, 140 20, 100 20 C 60 20, 30 60, 30 100 Z" 
+                                  fill="url(#poringGradient)" stroke="#BE123C" stroke-width="2.5" />
+                            
+                            <ellipse cx="70" cy="50" rx="15" ry="8" fill="white" opacity="0.5" transform="rotate(-30 70 50)" />
+                            
+                            <g fill="#4A0404">
+                                <ellipse cx="75" cy="85" rx="4" ry="8">
+                                    <animate attributeName="ry" values="8;0.5;8" dur="4s" repeatCount="indefinite" keyTimes="0;0.05;0.1" />
+                                </ellipse>
+                                <ellipse cx="125" cy="85" rx="4" ry="8">
+                                    <animate attributeName="ry" values="8;0.5;8" dur="4s" repeatCount="indefinite" keyTimes="0;0.05;0.1" />
+                                </ellipse>
+                            </g>
+                            
+                            <path d="M 92 95 Q 100 105, 108 95" stroke="#4A0404" stroke-width="2.5" fill="none" stroke-linecap="round" />
 
-                    <g transform="translate(150, 50)" text-anchor="middle">
-                        <text x="0" y="0" font-family="'ZCOOL KuaiLe', cursive" font-size="60" fill="#FFF" stroke="#BE123C" stroke-width="6" dy="10">躺平</text>
-                        <text x="0" y="0" font-family="'ZCOOL KuaiLe', cursive" font-size="60" fill="#FFE4E6" dy="10">躺平</text>
-                    </g>
+                            <ellipse cx="60" cy="95" rx="6" ry="3" fill="#FCA5A5" opacity="0.6" />
+                            <ellipse cx="140" cy="95" rx="6" ry="3" fill="#FCA5A5" opacity="0.6" />
+                        </g>
 
-                    <g fill="#60A5FA" font-family="sans-serif" font-weight="bold">
-                        <text x="220" y="80" font-size="20">Z
-                            <animate attributeName="y" values="80;60" dur="2s" repeatCount="indefinite" begin="0s" />
-                            <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="0s" />
-                            <animateTransform attributeName="transform" type="scale" values="1;1.5" dur="2s" repeatCount="indefinite" />
-                        </text>
-                        <text x="240" y="60" font-size="15">z
-                            <animate attributeName="y" values="60;40" dur="2s" repeatCount="indefinite" begin="0.5s" />
-                            <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="0.5s" />
-                        </text>
-                    </g>
-                </svg>
+                        <g transform="translate(160, 40) rotate(15)">
+                            <rect x="-5" y="-15" width="50" height="26" rx="5" fill="#fff" stroke="#333" stroke-width="1.5"/>
+                            <text x="20" y="2" font-family="sans-serif" font-weight="bold" font-size="14" fill="#333" text-anchor="middle">Zzz...</text>
+                            <path d="M 0 10 L -5 20 L 5 12 Z" fill="#fff" stroke="#333" stroke-width="1.5" />
+                            <animateTransform attributeName="transform" type="translate" values="160,40; 160,35; 160,40" dur="3s" repeatCount="indefinite" />
+                        </g>
+
+                        <defs>
+                            <linearGradient id="poringGradient" x1="0.3" y1="0" x2="0.8" y2="1">
+                                <stop offset="0%" stop-color="#FDA4AF" />
+                                <stop offset="100%" stop-color="#E11D48" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <h2 class="text-3xl font-black text-rose-500 mt-2 font-cute tracking-widest drop-shadow-sm">躺著不想動</h2>
+            </div>
+            
+            <div class="game-container max-w-md mx-auto">
+                <div class="poring-deco drops-deco"></div><div class="poring-deco poporing-deco"></div>
+                <div onclick="app.switchTab('members')" class="ro-menu-btn group"><div class="icon-box"><i class="fas fa-book-open"></i></div><div class="ro-btn-content"><h3>成員名冊</h3><p>Guild Members</p></div></div>
+                <div onclick="app.switchTab('gvg')" class="ro-menu-btn btn-gvg group"><div class="icon-box"><i class="fas fa-shield-alt"></i></div><div class="ro-btn-content"><h3>GVG 分組</h3><p>War of Emperium</p></div></div>
+                <div onclick="app.switchTab('groups')" class="ro-menu-btn btn-grp group"><div class="icon-box"><i class="fas fa-fire"></i></div><div class="ro-btn-content"><h3>固定團</h3><p>Dungeons & Party</p></div></div>
+                <div onclick="app.switchTab('activity')" class="ro-menu-btn group bg-yellow-50 hover:bg-yellow-100 border-yellow-500">
+                    <div class="icon-box" style="background: linear-gradient(135deg, #FDBA74 0%, #EA580C 100%); border-color: #FED7AA;"><i class="fas fa-trophy"></i></div>
+                    <div class="ro-btn-content"><h3>活動獎勵</h3><p>Event & Rewards</p></div>
+                </div>
             </div>
         </div>
         
-        <div class="game-container max-w-md mx-auto">
-            <div class="poring-deco drops-deco"></div><div class="poring-deco poporing-deco"></div>
-            <div onclick="app.switchTab('members')" class="ro-menu-btn group"><div class="icon-box"><i class="fas fa-book-open"></i></div><div class="ro-btn-content"><h3>成員名冊</h3><p>Guild Members</p></div></div>
-            <div onclick="app.switchTab('gvg')" class="ro-menu-btn btn-gvg group"><div class="icon-box"><i class="fas fa-shield-alt"></i></div><div class="ro-btn-content"><h3>GVG 分組</h3><p>War of Emperium</p></div></div>
-            <div onclick="app.switchTab('groups')" class="ro-menu-btn btn-grp group"><div class="icon-box"><i class="fas fa-fire"></i></div><div class="ro-btn-content"><h3>固定團</h3><p>Dungeons & Party</p></div></div>
-            <div onclick="app.switchTab('activity')" class="ro-menu-btn group bg-yellow-50 hover:bg-yellow-100 border-yellow-500">
-                <div class="icon-box" style="background: linear-gradient(135deg, #FDBA74 0%, #EA580C 100%); border-color: #FED7AA;"><i class="fas fa-trophy"></i></div>
-                <div class="ro-btn-content"><h3>活動獎勵</h3><p>Event & Rewards</p></div>
+        <div id="view-members" class="animate-fade-in hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-slate-700 flex items-center"><i class="fas fa-scroll mr-2 text-yellow-600"></i>成員名冊</h2>
+                <button onclick="app.handleMainAction()" class="bg-blue-500 hover:bg-blue-600 text-white shadow-lg px-3 py-2 rounded-xl font-bold transition text-sm active:scale-95"><i class="fas fa-user-plus mr-1"></i> 新增</button>
+            </div>
+            
+            <div class="flex flex-col gap-3 mb-4 bg-white p-3 rounded-2xl border border-blue-100 shadow-sm">
+                <div class="relative w-full">
+                    <i class="fas fa-search absolute left-3 top-3 text-blue-300"></i>
+                    <input type="text" id="searchInput" oninput="app.renderMembers()" placeholder="搜尋名字、職業..." class="w-full bg-blue-50/50 border border-blue-100 text-slate-800 rounded-xl pl-10 pr-4 py-2.5 outline-none font-bold">
+                </div>
+                <div class="relative w-full">
+                    <select id="filterJob" onchange="app.setJobFilter(this.value)" class="w-full bg-slate-50 border border-blue-100 rounded-xl p-2.5 outline-none font-bold text-slate-700">
+                        <option value="all">所有職業</option>
+                    </select>
+                    <i class="fas fa-chevron-down absolute right-3 top-3.5 text-slate-400 pointer-events-none"></i>
+                </div>
+                <div class="flex gap-2 overflow-x-auto pb-1 scroll-hide">
+                    <button onclick="app.setFilter('all')" class="px-4 py-1.5 rounded-full text-sm font-bold bg-slate-800 text-white shadow-md filter-btn">全部</button>
+                    <button onclick="app.setFilter('輸出')" class="px-4 py-1.5 rounded-full text-sm font-bold bg-white text-slate-600 border hover:bg-blue-50 filter-btn">輸出</button>
+                    <button onclick="app.setFilter('輔助')" class="px-4 py-1.5 rounded-full text-sm font-bold bg-white text-slate-600 border hover:bg-blue-50 filter-btn">輔助</button>
+                    <button onclick="app.setFilter('坦')" class="px-4 py-1.5 rounded-full text-sm font-bold bg-white text-slate-600 border hover:bg-blue-50 filter-btn">坦克</button>
+                    <button onclick="app.setFilter('待定')" class="px-4 py-1.5 rounded-full text-sm font-bold bg-white text-slate-600 border hover:bg-blue-50 filter-btn">待定</button>
+                </div>
+            </div>
+
+            <div class="flex justify-between text-xs text-slate-500 mb-2 px-2 font-mono">
+                <span id="memberCount">Total: 0</span>
+                <div class="space-x-1">
+                    <span class="bg-red-100 text-red-700 px-1.5 py-0.5 rounded">DPS:<span id="stat-dps" class="font-bold ml-1">0</span></span>
+                    <span class="bg-green-100 text-green-700 px-1.5 py-0.5 rounded">SUP:<span id="stat-sup" class="font-bold ml-1">0</span></span>
+                    <span class="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">TNK:<span id="stat-tank" class="font-bold ml-1">0</span></span>
+                </div>
+            </div>
+            <div id="memberGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+        </div>
+
+        <div id="view-groups" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-slate-700" id="groupViewTitle">分組列表</h2>
+                <div class="flex gap-2">
+                     <div class="relative w-36"><i class="fas fa-search absolute left-3 top-2.5 text-blue-300 text-xs"></i><input type="text" id="groupSearchInput" oninput="app.renderSquads()" placeholder="搜尋..." class="w-full bg-blue-50/50 border border-blue-100 text-slate-800 rounded-lg pl-8 pr-3 py-2 text-xs outline-none"></div>
+                     <button onclick="app.handleMainAction()" class="bg-blue-500 hover:bg-blue-600 text-white shadow-lg px-3 py-2 rounded-xl font-bold transition text-sm active:scale-95"><i class="fas fa-plus mr-1"></i> 建隊</button>
+                </div>
+            </div>
+            <div id="adminWarning" class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-3 rounded-xl mb-4 text-xs flex items-center hidden">
+                <i class="fas fa-lock mr-2 text-lg"></i> 
+                <div><div class="font-bold">權限受限</div><div>僅有 會長、指揮官、管理員 可編輯此頁面。</div></div>
+            </div>
+            <div id="squadGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
+            <div id="noSquadsMsg" class="hidden text-center py-20 text-slate-400">
+                <div class="text-6xl mb-4 text-slate-200"><i class="fas fa-box-open"></i></div><p class="text-slate-400 font-bold">目前沒有隊伍</p>
+            </div>
+        </div>
+
+        <div id="view-activity" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-slate-700 flex items-center"><i class="fas fa-trophy mr-2 text-yellow-600"></i>活動獎勵管理</h2>
+                <button onclick="app.handleMainAction()" id="addActivityBtn" class="bg-yellow-500 hover:bg-yellow-600 text-white shadow-lg px-3 py-2 rounded-xl font-bold transition text-sm active:scale-95 hidden"><i class="fas fa-plus mr-1"></i> 新增活動</button>
+            </div>
+            <div id="activityAdminWarning" class="bg-red-50 border border-red-200 text-red-800 p-3 rounded-xl mb-4 text-xs flex items-center hidden">
+                <i class="fas fa-lock mr-2 text-lg"></i> 
+                <div><div class="font-bold">權限受限</div><div>此頁面操作 (發放獎勵) 僅限 **會長** 使用。</div></div>
+            </div>
+            <div id="activityList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+             <div id="noActivitiesMsg" class="hidden text-center py-20 text-slate-400">
+                <div class="text-6xl mb-4 text-slate-200"><i class="fas fa-box-open"></i></div><p class="text-slate-400 font-bold">目前沒有活動</p>
+            </div>
+        </div>
+
+    </main>
+    
+    <div id="loginModal" class="modal-overlay fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-[70]">
+        <div class="bg-white rounded-3xl w-full max-w-sm shadow-2xl p-6 relative border-4 border-white ring-4 ring-blue-100">
+            <button onclick="app.closeModal('loginModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-times"></i></button>
+            <div class="text-center mb-6"><div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-3xl mx-auto mb-3 border-4 border-white shadow-md"><i class="fas fa-user-lock"></i></div><h3 class="text-xl font-black text-slate-800">管理員登入</h3></div>
+            <form id="loginForm" class="space-y-4" onsubmit="event.preventDefault(); app.handleLogin();">
+                <input type="text" id="loginUser" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3 font-bold outline-none" placeholder="帳號">
+                <input type="password" id="loginPass" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3 font-bold outline-none" placeholder="密碼">
+                <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg mt-2 active:scale-95 transition border-b-4 border-blue-800">確認登入</button>
+            </form>
+        </div>
+    </div>
+    
+    <div id="editModal" class="modal-overlay fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto border-4 border-white">
+            <button onclick="app.closeModal('editModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-times text-xl"></i></button>
+            <h3 class="text-xl font-bold text-slate-800 mb-6 border-b-2 border-dashed border-slate-200 pb-3">成員資料</h3>
+            <form id="memberForm" class="space-y-4" onsubmit="return false;">
+                <input type="hidden" id="editId">
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-xs text-slate-500 mb-1 font-bold">遊戲 ID</label><input type="text" id="gameName" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3 font-bold outline-none" required></div>
+                    <div><label class="block text-xs text-slate-500 mb-1 font-bold">LINE 暱稱</label><input type="text" id="lineName" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3 outline-none" required></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1 font-bold">職業大類</label>
+                        <div class="relative"><select id="baseJobSelect" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3 appearance-none outline-none font-bold" onchange="app.updateSubJobSelect()"></select><i class="fas fa-chevron-down absolute right-3 top-4 text-slate-400 pointer-events-none"></i></div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1 font-bold">流派 (可手動)</label>
+                        <div class="flex gap-1">
+                            <div class="relative w-full" id="subJobSelectWrapper"><select id="subJobSelect" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3 appearance-none outline-none font-bold disabled:bg-slate-100"></select><i class="fas fa-chevron-down absolute right-3 top-4 text-slate-400 pointer-events-none"></i></div>
+                            <input type="text" id="subJobInput" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3 outline-none hidden" placeholder="輸入流派">
+                            <button type="button" onclick="app.toggleJobInputMode()" id="toggleJobBtn" class="bg-slate-100 text-slate-500 px-3 rounded-xl border-2 border-slate-200 hidden"><i class="fas fa-pen"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-xs text-slate-500 mb-1 font-bold">定位</label><select id="role" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3 outline-none"><option value="輸出">輸出 (DPS)</option><option value="輔助">輔助 (Sup)</option><option value="坦">坦克 (Tank)</option><option value="待定">待定 (Unknown)</option></select></div>
+                    <div><label class="block text-xs text-slate-500 mb-1 font-bold flex items-center">公會職位 <i class="fas fa-lock text-slate-300 text-xs ml-2" id="rankLockIcon"></i></label><select id="rank" class="w-full bg-white border border-blue-200 rounded-lg p-2.5 outline-none disabled:bg-transparent disabled:border-none disabled:p-0 disabled:font-bold disabled:text-slate-600 disabled:mt-2"><option value="成員">成員</option><option value="會長">會長</option><option value="指揮官">指揮官</option><option value="資料管理員">資料管理員</option></select></div>
+                </div>
+                <div><label class="block text-xs text-slate-500 mb-1 font-bold">備註</label><textarea id="intro" rows="3" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3 outline-none"></textarea></div>
+                <div class="flex justify-between items-center mt-6 pt-4 border-t-2 border-dashed border-slate-200">
+                     <div id="deleteBtnContainer"></div>
+                     <div class="flex gap-3"><button type="button" onclick="app.closeModal('editModal')" class="px-4 py-2 text-slate-500 hover:text-slate-800 font-bold">取消</button><button type="button" onclick="app.saveMemberData()" class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg active:scale-95 transition border-b-4 border-blue-700">儲存</button></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="squadModal" class="modal-overlay fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-2xl shadow-2xl p-6 relative flex flex-col max-h-[90vh] border-4 border-white">
+            <button onclick="app.closeModal('squadModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-times text-xl"></i></button>
+            <h3 class="text-xl font-bold text-slate-800 mb-4 border-b-2 border-dashed border-slate-200 pb-3"><i class="fas fa-users-cog mr-2 text-blue-500"></i><span id="squadModalTitle">隊伍管理</span></h3>
+            <div class="space-y-4 mb-4">
+                <input type="hidden" id="squadId"><input type="hidden" id="squadType">
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="col-span-2">
+                        <label class="block text-xs text-slate-500 mb-1 font-bold">隊伍名稱</label>
+                        <input type="text" id="squadName" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3 font-bold outline-none" placeholder="例如：進攻 A 隊">
+                    </div>
+                    <div class="col-span-1">
+                        <label class="block text-xs text-slate-500 mb-1 font-bold">隊長 (僅限隊員)</label>
+                        <select id="squadLeader" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3 outline-none font-bold text-sm">
+                            <option value="">未指定</option>
+                        </select>
+                    </div>
+                    <div class="col-span-1">
+                        <label class="block text-xs text-slate-500 mb-1 font-bold">備註</label>
+                        <input type="text" id="squadNote" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3 outline-none" placeholder="守城 / 遊走">
+                    </div>
+                </div>
+            </div>
+            <div class="flex-grow overflow-hidden flex flex-col">
+                <label class="block text-xs text-slate-500 mb-2 font-bold flex justify-between items-center"><span>勾選隊員 (已選: <span id="selectedCount" class="text-blue-600 font-bold">0</span>)</span><input type="text" id="memberSearch" oninput="app.renderSquadMemberSelect()" placeholder="搜尋..." class="bg-slate-50 border border-slate-300 rounded-lg px-3 py-1 text-xs text-slate-800 w-32 appearance-none"></label>
+                <div id="squadMemberSelect" class="flex-grow overflow-y-auto bg-slate-50 border border-slate-200 rounded-xl p-2 grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[300px] touch-pan-y"></div>
+            </div>
+            <div class="flex justify-between items-center mt-6 pt-4 border-t-2 border-dashed border-slate-200 shrink-0">
+                 <div id="deleteSquadBtnContainer"></div>
+                 <div class="flex gap-3"><button type="button" onclick="app.closeModal('squadModal')" class="px-4 py-2 text-slate-500 hover:text-slate-800 font-bold">取消</button><button type="button" onclick="app.saveSquad()" class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg active:scale-95 transition border-b-4 border-blue-700">儲存</button></div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="activityModal" class="modal-overlay fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-xl shadow-2xl p-6 relative flex flex-col max-h-[90vh] border-4 border-white">
+            <button onclick="app.closeModal('activityModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-times text-xl"></i></button>
+            <h3 class="text-xl font-bold text-slate-800 mb-4 border-b-2 border-dashed border-slate-200 pb-3"><i class="fas fa-star mr-2 text-yellow-500"></i>活動管理 - <span id="activityModalTitle">新增</span></h3>
+            <input type="hidden" id="activityId">
+            <div class="space-y-3 mb-4">
+                <div><label class="block text-xs text-slate-500 mb-1 font-bold">活動主題</label><input type="text" id="activityName" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3 font-bold outline-none focus:border-yellow-500" placeholder="例如：MVP 爭霸戰"></div>
+                <div><label class="block text-xs text-slate-500 mb-1 font-bold">總獎勵說明 (顯示於卡片上方)</label><textarea id="activityNote" rows="2" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-yellow-500" placeholder="例如：Zeny x 5000000"></textarea></div>
+            </div>
+            <div class="flex justify-between items-center mb-2 pt-2 border-t border-slate-100">
+                <h4 class="text-sm font-bold text-slate-600 flex items-center"><i class="fas fa-users mr-1"></i> 得獎者名單 (<span id="winnerCount">0</span>)</h4>
+                <button onclick="app.openWinnerSelectionModal()" class="bg-orange-100 hover:bg-orange-200 text-orange-600 text-xs font-bold py-1 px-3 rounded-lg border border-orange-300 flex items-center transition"><i class="fas fa-hand-pointer mr-1"></i> 選取得獎者</button>
+            </div>
+            <div id="winnerListContainer" class="flex-grow overflow-y-auto bg-white border border-slate-200 rounded-xl p-1 max-h-[300px] space-y-1"></div>
+            <div class="flex justify-between items-center mt-6 pt-4 border-t-2 border-dashed border-slate-200 shrink-0">
+                 <div id="deleteActivityBtnContainer"></div>
+                 <div class="flex gap-3"><button type="button" onclick="app.closeModal('activityModal')" class="px-4 py-2 text-slate-500 hover:text-slate-800 font-bold">取消</button><button type="button" onclick="app.saveActivity()" class="px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold rounded-xl shadow-lg active:scale-95 transition border-b-4 border-yellow-700">儲存活動</button></div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="winnerSelectionModal" class="modal-overlay fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl p-6 relative flex flex-col max-h-[90vh] border-4 border-white">
+            <button onclick="app.closeModal('winnerSelectionModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-times text-xl"></i></button>
+            <h3 class="text-xl font-bold text-slate-800 mb-4 border-b-2 border-dashed border-slate-200 pb-3"><i class="fas fa-dice mr-2 text-red-500"></i>選取活動得獎者</h3>
+            <div class="flex justify-between items-center mb-3">
+                <h4 class="text-sm font-bold text-slate-600">從名冊中勾選成員</h4>
+                <button onclick="app.performLuckyDraw()" class="bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-1 px-3 rounded-lg border border-red-300 flex items-center transition active:scale-95"><i class="fas fa-shuffle mr-1"></i> 隨機選取 1 位</button>
+            </div>
+            <input type="text" id="winnerSearchInput" oninput="app.renderWinnerMemberSelect()" placeholder="搜尋成員..." class="bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-800 w-full appearance-none mb-3">
+            <div id="winnerMemberSelect" class="flex-grow overflow-y-auto bg-slate-50 border border-slate-200 rounded-xl p-2 grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[300px] touch-pan-y"></div>
+            <div class="flex justify-end items-center mt-6 pt-4 border-t-2 border-dashed border-slate-200 shrink-0">
+                 <button type="button" onclick="app.confirmWinnerSelection()" class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg active:scale-95 transition border-b-4 border-blue-700">確認選取</button>
             </div>
         </div>
     </div>
 
-    ```
-
----
-
-### 2. `app.js` (修復固定團隊長選單)
-
-**問題原因：** 固定團的資料結構中，成員有時只儲存 ID 字串（如 `"m01"`），而非物件。之前的 `updateLeaderOptions` 判斷稍微嚴格了些。
-**解決方案：** 我在 `updateLeaderOptions` 中增加了雙重保險，確保無論是物件還是字串 ID，都能正確抓到成員名字並放入選單。
-
-請**全選覆蓋**您的 `app.js`：
-
-```javascript
-// app.js
-
-// --- 1. 確保配置已載入 ---
-if (typeof window.AppConfig === 'undefined') {
-    console.error("Configuration (config.js) not loaded.");
-    document.body.innerHTML = '<div style="padding: 50px; text-align: center; color: red;">錯誤：config.js 未載入。</div>';
-}
-
-const Config = window.AppConfig || {};
-const { FIREBASE_CONFIG, COLLECTION_NAMES, SEED_DATA, SEED_GROUPS, SEED_ACTIVITIES, JOB_STRUCTURE, JOB_STYLES } = Config;
-
-// --- 2. 應用程式核心邏輯 ---
-
-const App = {
-    db: null, auth: null,
-    members: [], groups: [], activities: [], history: [],
-    currentTab: 'home', 
-    currentFilter: 'all', currentJobFilter: 'all', // 名冊頁面的篩選
-    currentSquadRoleFilter: 'all', // GVG/隊伍列表頁面的篩選
-    currentModalRoleFilter: 'all', // 編輯隊伍視窗內的篩選
-    mode: 'demo', userRole: 'guest',
-    currentSquadMembers: [], currentActivityWinners: [], tempWinnerSelection: [],
-
-    init: async function() {
-        this.loadLocalState();
-        this.initFirebase();
-        this.updateAdminUI();
-        this.populateJobSelects();
-        this.switchTab('home');
-    },
-
-    loadLocalState: function() {
-        const savedRole = localStorage.getItem('row_user_role');
-        if (savedRole && ['admin', 'master', 'commander'].includes(savedRole)) this.userRole = savedRole;
-
-        const storedMem = localStorage.getItem('row_local_members');
-        const storedGrp = localStorage.getItem('row_local_groups');
-        const storedAct = localStorage.getItem('row_local_activities');
-        const storedHistory = localStorage.getItem('row_mod_history');
-        
-        this.members = storedMem ? JSON.parse(storedMem) : SEED_DATA;
-        this.groups = storedGrp ? JSON.parse(storedGrp) : SEED_GROUPS;
-        this.activities = storedAct ? JSON.parse(storedAct) : (SEED_ACTIVITIES || []);
-        this.history = storedHistory ? JSON.parse(storedHistory) : [];
-        this.members = this.sortMembers(this.members);
-    },
-
-    initFirebase: function() {
-        let config = null;
-        const storedConfig = localStorage.getItem('row_firebase_config');
-        try {
-            if (storedConfig) config = JSON.parse(storedConfig);
-            else if (FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey) config = FIREBASE_CONFIG;
-        } catch (e) {}
-
-        if (config && config.apiKey) {
-            try {
-                if (!firebase.apps.length) firebase.initializeApp(config);
-                this.auth = firebase.auth();
-                this.db = firebase.firestore();
-                this.mode = 'firebase';
-                this.syncWithFirebase();
-            } catch (e) { this.mode = 'demo'; }
-        } else { this.mode = 'demo'; }
-    },
+    <div id="configModal" class="modal-overlay fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-md p-6 relative border-4 border-white">
+            <button onclick="app.closeModal('configModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-times text-xl"></i></button>
+            <h3 class="text-xl font-bold text-slate-800 mb-4">設定</h3>
+            <div class="space-y-4">
+                 <button onclick="app.showHistoryModal()" class="w-full text-left p-4 bg-slate-50 hover:bg-slate-100 rounded-xl flex items-center transition border border-slate-200"><div class="w-10 h-10 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mr-3"><i class="fas fa-history"></i></div><div><div class="font-bold text-slate-700">修改紀錄</div><div class="text-xs text-slate-500">僅會長/管理員可看</div></div></button>
+                <button onclick="app.downloadSelf()" class="w-full text-left p-4 bg-slate-50 hover:bg-slate-100 rounded-xl flex items-center transition border border-slate-200"><div class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center mr-3"><i class="fas fa-download"></i></div><div><div class="font-bold text-slate-700">下載備份</div><div class="text-xs text-slate-500">將目前的網頁存成新檔案</div></div></button>
+                <button onclick="app.exportCSV()" class="w-full text-left p-4 bg-slate-50 hover:bg-slate-100 rounded-xl flex items-center transition border border-slate-200"><div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-3"><i class="fas fa-file-csv"></i></div><div><div class="font-bold text-slate-700">匯出 Excel</div><div class="text-xs text-slate-500">將名單匯出為 CSV 格式</div></div></button>
+            </div>
+            <div class="mt-6 pt-4 border-t border-slate-100">
+                <p class="text-xs font-bold text-slate-500 mb-2">雲端同步金鑰 (Firebase)</p>
+                <textarea id="firebaseConfigInput" rows="3" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs text-slate-600 font-mono mb-4 appearance-none" placeholder='{ "apiKey": "..." }'></textarea>
+                <div class="flex justify-between items-center"><button onclick="app.resetToDemo()" class="text-red-400 text-xs hover:text-red-600">重置資料</button><button onclick="app.saveConfig()" class="px-4 py-2 bg-slate-800 text-white rounded-xl hover:bg-black transition shadow-lg">連線</button></div>
+            </div>
+        </div>
+    </div>
     
-    syncWithFirebase: function() {
-        if (!this.db || this.mode !== 'firebase') return;
-        this.db.collection(COLLECTION_NAMES.MEMBERS).onSnapshot(snap => { 
-            const arr = []; snap.forEach(d => arr.push({ id: d.id, ...d.data() })); 
-            this.members = this.sortMembers(arr); this.saveLocal('members'); this.render(); 
-        });
-        this.db.collection(COLLECTION_NAMES.GROUPS).onSnapshot(snap => { 
-            const arr = []; snap.forEach(d => arr.push({ id: d.id, ...d.data() })); 
-            this.groups = arr; this.saveLocal('groups'); this.render(); 
-        });
-        if (COLLECTION_NAMES.ACTIVITIES) {
-            this.db.collection(COLLECTION_NAMES.ACTIVITIES).onSnapshot(snap => {
-                const arr = []; snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
-                this.activities = arr; this.saveLocal('activities'); this.render();
-            });
-        }
-    },
+    <div id="historyModal" class="modal-overlay fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto border-4 border-white">
+            <button onclick="app.closeModal('historyModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-times text-xl"></i></button>
+            <h3 class="text-xl font-bold text-slate-800 mb-4 border-b-2 border-dashed border-slate-200 pb-3"><i class="fas fa-history mr-2 text-yellow-600"></i>修改紀錄</h3>
+            <div id="historyList" class="space-y-3"></div>
+        </div>
+    </div>
 
-    sortMembers: function(membersArray) {
-        return membersArray.sort((a, b) => {
-            const isSeedA = /^m\d{2}$/.test(a.id), isSeedB = /^m\d{2}$/.test(b.id);
-            if (isSeedA && isSeedB) return a.id.localeCompare(b.id);
-            if (isSeedA) return -1; if (isSeedB) return 1;
-            return (a.gameName || '').localeCompare(b.gameName || '');
-        });
-    },
-
-    saveLocal: function(key = 'all') {
-        if (this.mode === 'demo') {
-            if (key === 'members' || key === 'all') localStorage.setItem('row_local_members', JSON.stringify(this.members));
-            if (key === 'groups' || key === 'all') localStorage.setItem('row_local_groups', JSON.stringify(this.groups));
-            if (key === 'activities' || key === 'all') localStorage.setItem('row_local_activities', JSON.stringify(this.activities));
-            localStorage.setItem('row_mod_history', JSON.stringify(this.history));
-            this.render();
-        }
-    },
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script> 
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     
-    logChange: function(action, details, targetId) {
-        const log = { timestamp: Date.now(), user: this.userRole, action, details, targetId: targetId || 'N/A' };
-        this.history.unshift(log); this.saveLocal('history'); 
-    },
-
-    openLoginModal: function() {
-        if(this.userRole !== 'guest') { 
-            if(confirm("確定要登出嗎？")) { this.userRole = 'guest'; localStorage.removeItem('row_user_role'); this.updateAdminUI(); this.switchTab('home'); } 
-        } else { document.getElementById('loginForm').reset(); this.showModal('loginModal'); }
-    },
-
-    handleLogin: function() {
-        const u = document.getElementById('loginUser').value, p = document.getElementById('loginPass').value;
-        let role = 'guest';
-        if (u === 'poppy' && p === '123456') role = 'master';
-        else if (u === 'yuan' && p === '123456') role = 'admin';
-        else if (u === 'commander' && p === '123456') role = 'commander';
-        else { alert("帳號或密碼錯誤"); return; }
-        this.userRole = role; localStorage.setItem('row_user_role', this.userRole);
-        this.closeModal('loginModal'); this.updateAdminUI(); alert(`登入成功！身分：${role}`);
-    },
-    
-    updateAdminUI: function() {
-        const btn = document.getElementById('adminToggleBtn');
-        const adminControls = document.getElementById('adminControls');
-        const isAuth = this.userRole !== 'guest';
-        
-        if(isAuth) { btn.classList.add('admin-mode-on'); btn.innerHTML = '<i class="fas fa-sign-out-alt"></i>'; } 
-        else { btn.classList.remove('admin-mode-on'); btn.innerHTML = '<i class="fas fa-user-shield"></i>'; }
-
-        if (['master', 'admin'].includes(this.userRole)) { if(adminControls) adminControls.classList.remove('hidden'); } 
-        else { if(adminControls) adminControls.classList.add('hidden'); }
-        
-        const rankSelect = document.getElementById('rank'), lockIcon = document.getElementById('rankLockIcon');
-        if (this.userRole === 'master') { if (rankSelect) rankSelect.disabled = false; if (lockIcon) lockIcon.className = "fas fa-unlock text-blue-500 text-xs ml-2"; } 
-        else { if (rankSelect) rankSelect.disabled = true; if (lockIcon) lockIcon.className = "fas fa-lock text-slate-300 text-xs ml-2"; }
-        this.render();
-    },
-
-    switchTab: function(tab) {
-        this.currentTab = tab;
-        ['home','members','groups','activity'].forEach(v => document.getElementById('view-'+v).classList.add('hidden'));
-        if(tab === 'gvg' || tab === 'groups') document.getElementById('view-groups').classList.remove('hidden');
-        else document.getElementById('view-'+tab).classList.remove('hidden');
-
-        document.getElementById('nav-container').classList.toggle('hidden', tab === 'home');
-        document.querySelectorAll('.nav-pill').forEach(b => b.classList.remove('active'));
-        const activeBtn = document.getElementById('tab-' + tab); if(activeBtn) activeBtn.classList.add('active');
-
-        const adminWarning = document.getElementById('adminWarning');
-        if (tab === 'gvg' && !['master', 'admin', 'commander'].includes(this.userRole)) { if(adminWarning) adminWarning.classList.remove('hidden'); } 
-        else { if(adminWarning) adminWarning.classList.add('hidden'); }
-
-        const activityWarning = document.getElementById('activityAdminWarning');
-        const addActivityBtn = document.getElementById('addActivityBtn');
-        if (tab === 'activity') {
-            if (this.userRole === 'master') { if(addActivityBtn) addActivityBtn.classList.remove('hidden'); if(activityWarning) activityWarning.classList.add('hidden'); } 
-            else { if(addActivityBtn) addActivityBtn.classList.add('hidden'); if(activityWarning) activityWarning.classList.remove('hidden'); }
-        }
-
-        if(tab === 'gvg') { document.getElementById('groupViewTitle').innerText = 'GVG 攻城戰分組'; document.getElementById('squadModalTitle').innerText = 'GVG 分組管理'; } 
-        else if(tab === 'groups') { document.getElementById('groupViewTitle').innerText = '固定團列表'; document.getElementById('squadModalTitle').innerText = '固定團管理'; }
-        this.render();
-    },
-
-    handleMainAction: function() { 
-        if(this.currentTab === 'members') this.openAddModal();
-        else if(this.currentTab === 'gvg' || this.currentTab === 'groups') {
-            if(['master', 'admin', 'commander'].includes(this.userRole)) this.openSquadModal(); 
-            else alert("權限不足：僅有管理人員可建立隊伍");
-        }
-        else if(this.currentTab === 'activity') {
-            if(this.userRole === 'master') this.openActivityModal();
-            else alert("權限不足：僅有會長可建立活動");
-        }
-    },
-    
-    render: function() {
-        if (this.currentTab === 'members') this.renderMembers();
-        else if (this.currentTab === 'gvg' || this.currentTab === 'groups') this.renderSquads();
-        else if (this.currentTab === 'activity') this.renderActivities();
-        const cnt = document.querySelector('#view-home .ro-menu-btn .ro-btn-content p'); if (cnt) cnt.innerText = `Guild Members (${this.members.length})`;
-    },
-
-    // --- 成員相關邏輯 ---
-    renderMembers: function() {
-        const grid = document.getElementById('memberGrid');
-        const searchVal = document.getElementById('searchInput').value.toLowerCase();
-        let filtered = this.members.filter(item => {
-            const fullText = (item.lineName + item.gameName + item.mainClass + item.role + (item.intro||"")).toLowerCase();
-            return fullText.includes(searchVal) && (this.currentFilter === 'all' || item.role.includes(this.currentFilter) || (this.currentFilter === '坦' && item.mainClass.includes('坦')))
-                && (this.currentJobFilter === 'all' || (item.mainClass||"").startsWith(this.currentJobFilter));
-        });
-        document.getElementById('memberCount').innerText = `Total: ${filtered.length}`;
-        ['dps','sup','tank'].forEach(k => document.getElementById('stat-'+k).innerText = this.members.filter(d => d.role.includes(k==='dps'?'輸出':k==='sup'?'輔助':'坦')).length);
-        grid.innerHTML = filtered.map((item, idx) => this.createCardHTML(item, idx)).join('');
-    },
-    
-    createCardHTML: function(item, idx) {
-        const mainJob = item.mainClass ? item.mainClass.split('(')[0] : '';
-        const style = JOB_STYLES.find(s => s.key.some(k => mainJob.includes(k))) || { class: 'bg-job-default', icon: 'fa-user' };
-        let rankBadge = item.rank === '會長' ? `<span class="rank-badge rank-master">會長</span>` : item.rank === '指揮官' ? `<span class="rank-badge rank-commander">指揮官</span>` : item.rank === '資料管理員' ? `<span class="rank-badge rank-admin">管理</span>` : '';
-        const memberSquads = this.groups.filter(g => g.members.some(m => (typeof m === 'string' ? m : m.id) === item.id));
-        const squadBadges = memberSquads.map(s => {
-            const color = s.type === 'gvg' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-green-50 text-green-600 border-green-100';
-            return `<span class="${color} text-[10px] px-1.5 rounded border truncate inline-block max-w-[80px]">${s.name}</span>`;
-        }).join('');
-        const origIndex = SEED_DATA.findIndex(s => s.id === item.id);
-        const displayNo = origIndex >= 0 ? `#${(origIndex + 1).toString().padStart(2, '0')}` : "•";
-        const getRoleBadge = (r) => r.includes('輸出') ? `<span class="tag tag-dps">${r}</span>` : r.includes('坦') ? `<span class="tag tag-tank">${r}</span>` : r.includes('輔助') ? `<span class="tag tag-sup">${r}</span>` : '';
-
-        return `
-            <div class="card cursor-pointer group relative" onclick="app.openEditModal('${item.id}')">
-                <div class="member-no">${displayNo}</div>
-                <div class="job-stripe ${style.class}"></div>
-                <div class="job-icon-area ${style.class} bg-opacity-20"><i class="fas ${style.icon} ${style.class.replace('bg-', 'text-')} opacity-80 group-hover:scale-110 transition"></i></div>
-                <div class="flex-grow p-2.5 flex flex-col justify-between min-w-0">
-                    <div>
-                        <div class="flex justify-between items-start pr-6">
-                            <div class="flex items-center gap-1 min-w-0">${rankBadge}<h3 class="font-bold text-slate-700 text-base truncate">${item.gameName || '未命名'}</h3></div>
-                            ${getRoleBadge(item.role)}
-                        </div>
-                        <div class="text-xs font-bold text-slate-400 mt-0.5">${item.mainClass || '未定'}</div>
-                    </div>
-                    <div class="flex justify-between items-end mt-1">
-                        <div class="flex flex-col gap-1 w-full mr-1">
-                            <div class="flex items-center text-[10px] text-slate-400 font-mono bg-white border border-slate-100 rounded px-1.5 py-0.5 w-fit hover:bg-slate-50 copy-tooltip" onclick="event.stopPropagation(); app.copyText(this, '${item.lineName}')"><i class="fab fa-line mr-1 text-green-500"></i> ${item.lineName}</div>
-                            <div class="flex gap-1 overflow-hidden h-4">${squadBadges}</div>
-                        </div>
-                        ${item.intro ? `<i class="fas fa-info-circle text-blue-200 hover:text-blue-500" title="${item.intro}"></i>` : ''}
-                    </div>
-                </div>
-            </div>`;
-    },
-
-    // Filter & Job & Modal Logic
-    setFilter: function(f) { this.currentFilter = f; document.querySelectorAll('.filter-btn').forEach(b => b.className = (b.innerText.includes(f==='all'?'全部':f)||(f==='坦'&&b.innerText.includes('坦克'))||(f==='待定'&&b.innerText.includes('待定'))) ? "px-4 py-1.5 rounded-full text-sm font-bold bg-slate-800 text-white transition whitespace-nowrap filter-btn active shadow-md" : "px-4 py-1.5 rounded-full text-sm font-bold bg-white text-slate-600 border border-slate-200 hover:bg-blue-50 transition whitespace-nowrap filter-btn"); this.renderMembers(); },
-    setJobFilter: function(j) { this.currentJobFilter = j; this.renderMembers(); },
-    
-    setSquadRoleFilter: function(f) { this.currentSquadRoleFilter = f; this.renderSquads(); },
-
-    setModalRoleFilter: function(f) { 
-        this.currentModalRoleFilter = f; 
-        this.renderSquadMemberSelect(); 
-        
-        const btns = document.querySelectorAll('#modalFilterContainer button');
-        btns.forEach(b => {
-            const isActive = (b.getAttribute('data-filter') === f);
-            const activeClass = b.getAttribute('data-active-class');
-            b.className = isActive ? 
-                `px-3 py-1 rounded text-xs font-bold shadow-sm transition whitespace-nowrap active:scale-95 ${activeClass}` : 
-                `px-3 py-1 rounded text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 transition whitespace-nowrap`;
-        });
-    },
-
-    populateJobSelects: function() { 
-        const baseSelect = document.getElementById('baseJobSelect'); 
-        const filterSelect = document.getElementById('filterJob');
-        
-        if(baseSelect) {
-            baseSelect.innerHTML = '<option value="" disabled selected>選擇職業</option>'; 
-            Object.keys(JOB_STRUCTURE).forEach(j => baseSelect.innerHTML += `<option value="${j}">${j}</option>`); 
-        }
-
-        if(filterSelect) {
-            filterSelect.innerHTML = '<option value="all">所有職業</option>'; 
-            Object.keys(JOB_STRUCTURE).forEach(j => filterSelect.innerHTML += `<option value="${j}">${j}</option>`); 
-        }
-    },
-    populateBaseJobSelect: function() { this.populateJobSelects(); }, 
-
-    updateSubJobSelect: function() {
-        const b = document.getElementById('baseJobSelect').value, s = document.getElementById('subJobSelect');
-        s.innerHTML = '<option value="" disabled selected>選擇流派</option>';
-        if (JOB_STRUCTURE[b]) { s.disabled = false; JOB_STRUCTURE[b].forEach(sub => s.innerHTML += `<option value="${b}(${sub})">${sub}</option>`); } else s.disabled = true;
-    },
-    toggleJobInputMode: function() { document.getElementById('subJobInput').classList.toggle('hidden'); document.getElementById('subJobSelectWrapper').classList.toggle('hidden'); },
-    
-    openAddModal: function() { document.getElementById('memberForm').reset(); document.getElementById('editId').value = ''; document.getElementById('deleteBtnContainer').innerHTML = ''; document.getElementById('baseJobSelect').value = ""; this.updateSubJobSelect(); document.getElementById('subJobSelectWrapper').classList.remove('hidden'); document.getElementById('subJobInput').classList.add('hidden'); app.showModal('editModal'); },
-    
-    openEditModal: function(id) {
-        const item = this.members.find(d => d.id === id); if (!item) return;
-        document.getElementById('editId').value = item.id;
-        document.getElementById('lineName').value = item.lineName; document.getElementById('gameName').value = item.gameName;
-        document.getElementById('role').value = item.role.split(/[ ,]/)[0]||'待定'; document.getElementById('rank').value = item.rank || '成員'; document.getElementById('intro').value = item.intro;
-        
-        const baseSelect = document.getElementById('baseJobSelect'), subSelect = document.getElementById('subJobSelect'), subInput = document.getElementById('subJobInput'), wrapper = document.getElementById('subJobSelectWrapper'), btn = document.getElementById('toggleJobBtn');
-        const fullJob = item.mainClass || '', match = fullJob.match(/^([^(]+)\(([^)]+)\)$/);
-        
-        if (['master', 'admin'].includes(this.userRole)) btn.classList.remove('hidden'); else btn.classList.add('hidden');
-        subInput.classList.add('hidden'); wrapper.classList.remove('hidden');
-
-        if (match && JOB_STRUCTURE[match[1]]) { baseSelect.value = match[1]; this.updateSubJobSelect(); subSelect.value = fullJob; }
-        else {
-            const potential = fullJob.split('(')[0];
-            if (JOB_STRUCTURE[potential]) { baseSelect.value = potential; this.updateSubJobSelect(); subSelect.value = fullJob; }
-            else if (['master', 'admin'].includes(this.userRole)) { baseSelect.value = ""; subInput.value = fullJob; subInput.classList.remove('hidden'); wrapper.classList.add('hidden'); }
-            else { baseSelect.value = ""; subSelect.disabled = true; }
-        }
-        this.updateAdminUI();
-        document.getElementById('deleteBtnContainer').innerHTML = ['master', 'admin'].includes(this.userRole) ? `<button type="button" onclick="app.deleteMember('${item.id}')" class="text-red-500 text-sm hover:underline">刪除成員</button>` : '';
-        app.showModal('editModal');
-    },
-
-    saveMemberData: async function() {
-        const id = document.getElementById('editId').value;
-        let mainClass = !document.getElementById('subJobInput').classList.contains('hidden') ? document.getElementById('subJobInput').value : document.getElementById('subJobSelect').value;
-        const baseJob = document.getElementById('baseJobSelect').value;
-        if ((!mainClass || mainClass === "選擇流派") && baseJob) mainClass = baseJob;
-        if (!mainClass) mainClass = "待定";
-        const member = { lineName: document.getElementById('lineName').value, gameName: document.getElementById('gameName').value, mainClass, role: document.getElementById('role').value, rank: document.getElementById('rank').value, intro: document.getElementById('intro').value };
-        
-        if (id) await this.updateMember(id, member); else await this.addMember(member);
-        this.logChange(id?'成員更新':'新增成員', `${member.gameName}`, id || member.gameName); this.closeModal('editModal');
-    },
-    addMember: async function(m) { if (this.mode === 'firebase') await this.db.collection(COLLECTION_NAMES.MEMBERS).add(m); else { m.id = 'm_' + Date.now(); this.members.push(m); this.members = this.sortMembers(this.members); this.saveLocal('members'); } },
-    updateMember: async function(id, m) { if (this.mode === 'firebase') await this.db.collection(COLLECTION_NAMES.MEMBERS).doc(id).update(m); else { const idx = this.members.findIndex(d => d.id === id); if (idx !== -1) { this.members[idx] = { ...this.members[idx], ...m }; this.members = this.sortMembers(this.members); this.saveLocal('members'); } } },
-    deleteMember: async function(id) {
-        if (!['master', 'admin'].includes(this.userRole)) return;
-        if (!confirm("確定要刪除這位成員嗎？")) return;
-        if (this.mode === 'firebase') await this.db.collection(COLLECTION_NAMES.MEMBERS).doc(id).delete();
-        else { this.members = this.members.filter(d => d.id !== id); this.groups.forEach(g => g.members = g.members.filter(m => (typeof m === 'string' ? m : m.id) !== id)); this.saveLocal(); }
-        this.logChange('成員刪除', `ID: ${id}`, id); this.closeModal('editModal');
-    },
-
-    // --- 3. 固定團 / GVG 邏輯 ---
-
-    renderSquads: function() {
-        const type = this.currentTab === 'gvg' ? 'gvg' : 'groups';
-        const search = document.getElementById('groupSearchInput').value.toLowerCase();
-        const canEdit = ['master', 'admin', 'commander'].includes(this.userRole);
-        
-        let visibleGroups = this.groups.filter(g => (g.type || 'gvg') === type);
-        if (search) {
-            visibleGroups = visibleGroups.filter(g => {
-                if (g.name.toLowerCase().includes(search)) return true;
-                return g.members.some(m => {
-                    const mem = this.members.find(x => x.id === (typeof m === 'string' ? m : m.id));
-                    return mem && (
-                        mem.gameName.toLowerCase().includes(search) || 
-                        (mem.mainClass||'').toLowerCase().includes(search) ||
-                        (mem.role||'').includes(search)
-                    );
-                });
-            });
-        }
-
-        const grid = document.getElementById('squadGrid');
-        const emptyMsg = document.getElementById('noSquadsMsg');
-
-        // GVG 外部清單篩選器
-        const filterContainer = document.createElement('div');
-        filterContainer.className = "col-span-1 lg:col-span-2 flex gap-2 mb-2 overflow-x-auto pb-1";
-        const filters = [
-            {id: 'all', label: '全部', color: 'bg-slate-800 text-white'},
-            {id: '輸出', label: '輸出', color: 'bg-red-500 text-white'},
-            {id: '輔助', label: '輔助', color: 'bg-green-500 text-white'},
-            {id: '坦', label: '坦克', color: 'bg-blue-500 text-white'}
-        ];
-        
-        filterContainer.innerHTML = filters.map(f => {
-            const isActive = this.currentSquadRoleFilter === f.id;
-            const styleClass = isActive ? f.color : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50';
-            return `<button onclick="app.setSquadRoleFilter('${f.id}')" class="px-4 py-1.5 rounded-full text-sm font-bold shadow-sm transition whitespace-nowrap active:scale-95 ${styleClass}">${f.label}</button>`;
-        }).join('');
-
-        grid.innerHTML = '';
-        if (visibleGroups.length > 0 || this.currentSquadRoleFilter !== 'all') {
-             grid.insertAdjacentHTML('beforeend', filterContainer.outerHTML);
-        }
-
-        if (visibleGroups.length === 0) { emptyMsg.classList.remove('hidden'); return; }
-        emptyMsg.classList.add('hidden');
-
-        const groupsHTML = visibleGroups.map(group => {
-            const groupMembers = (group.members || []).map(m => {
-                const id = typeof m === 'string' ? m : m.id;
-                const status = typeof m === 'string' ? 'pending' : (m.status || 'pending');
-                const subId = typeof m === 'string' ? null : (m.subId || null);
-                const mem = this.members.find(x => x.id === id);
-                return mem ? { ...mem, status, subId } : null;
-            }).filter(x => x);
-
-            const isGVG = type === 'gvg';
-            
-            const list = groupMembers.map(m => {
-                if (this.currentSquadRoleFilter !== 'all') {
-                    const filterKey = this.currentSquadRoleFilter;
-                    const match = m.role.includes(filterKey) || (filterKey === '坦' && m.mainClass.includes('坦'));
-                    if (!match) return ''; 
-                }
-
-                const job = (m.mainClass || '').split('(')[0];
-                const roleColor = m.role.includes('輸出')?'text-red-500':m.role.includes('輔助')?'text-green-500':'text-blue-500';
-                
-                let actionUI = "";
-                let rowClass = "";
-                
-                if (isGVG) {
-                    if (m.status === 'leave') rowClass = "row-leave";
-
-                    // GVG 開放所有人操作燈號
-                    // 1. 替補顯示區域 (Admin: 選單, Guest: 文字)
-                    let subUI = "";
-                    if (m.status === 'leave') {
-                        if (canEdit) {
-                            // Admin: 下拉選單
-                            const otherMembers = this.members.filter(x => !groupMembers.some(gm => gm.id === x.id) || x.id === m.subId);
-                            const options = otherMembers.map(om => `<option value="${om.id}" ${om.id === m.subId ? 'selected' : ''}>${om.gameName}</option>`).join('');
-                            subUI = `<select class="sub-select" onchange="app.updateGvgSub('${group.id}', '${m.id}', this.value)" onclick="event.stopPropagation()"><option value="">選擇替補...</option>${options}</select>`;
-                        } else if (m.subId) {
-                            // Guest: 純文字顯示替補是誰
-                            const subMem = this.members.find(x => x.id === m.subId);
-                            if (subMem) subUI = `<span class="text-blue-500 text-xs mr-2">⇋ ${subMem.gameName}</span>`;
-                        }
-                    }
-
-                    // 2. 燈號區域 (所有人皆可操作)
-                    actionUI = `
-                        <div class="flex items-center gap-1">
-                            ${subUI}
-                            <div class="gvg-light bg-light-yellow ${m.status === 'leave' ? 'active' : ''}"
-                                 title="請假 (Leave)"
-                                 onclick="event.stopPropagation(); app.toggleGvgStatus('${group.id}', '${m.id}', 'leave')"></div>
-                            <div class="gvg-light ${m.status === 'ready' ? 'bg-light-green active' : 'bg-light-red'}"
-                                 title="狀態"
-                                 onclick="event.stopPropagation(); app.toggleGvgStatus('${group.id}', '${m.id}', 'ready_toggle')"></div>
-                        </div>
-                    `;
-                } else {
-                    actionUI = `<span class="text-xs text-slate-300 font-mono">ID:${m.id.slice(-3)}</span>`;
-                }
-
-                return `<div class="flex items-center justify-between text-sm py-2.5 border-b border-slate-100 last:border-0 hover:bg-slate-50 px-3 transition ${rowClass}"><div class="flex items-center gap-3 min-w-0"><div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold ${roleColor}">${m.role.substring(0,1)}</div><div class="flex flex-col min-w-0"><span class="text-slate-800 font-bold truncate member-name">${m.gameName}</span><span class="text-[10px] text-slate-400 font-mono">${job}</span></div></div>${actionUI}</div>`;
-            }).join('');
-                
-            const headerClass = isGVG ? 'header squad-card-gvg-header' : 'bg-blue-50 p-4 border-b border-blue-100';
-            const cardClass = isGVG ? 'squad-card-gvg' : 'bg-white rounded-xl shadow-sm border border-blue-100';
-            const editBtn = canEdit ? `<button onclick="app.openSquadModal('${group.id}')" class="text-slate-400 hover:text-blue-600 p-1"><i class="fas fa-cog"></i></button>` : '';
-            const copyBtn = `<button onclick="app.copySquadList('${group.id}')" class="text-slate-400 hover:text-green-600 p-1 ml-2" title="複製隊伍"><i class="fas fa-copy"></i></button>`;
-
-            let footer = "";
-            if (isGVG) {
-                const readyCount = groupMembers.filter(m => m.status === 'ready').length;
-                const leaveCount = groupMembers.filter(m => m.status === 'leave').length;
-                const leader = group.leaderId ? (this.members.find(m => m.id === group.leaderId)?.gameName || '未知') : '未指定';
-                footer = `<div class="bg-white p-3 border-t border-slate-100 flex justify-between items-center shrink-0 text-xs font-bold text-slate-500">
-                    <span class="text-blue-600">👑 隊長: ${leader}</span>
-                    <div class="flex gap-2"><span class="text-green-600">🟢 ${readyCount}</span><span class="text-yellow-600">🟡 ${leaveCount}</span></div>
-                </div>`;
-            } else { footer = `<div class="bg-white p-2 border-t border-slate-100 text-center text-xs text-slate-400">固定成員 ${groupMembers.length} 人</div>`; }
-
-            return `<div class="${cardClass} flex flex-col h-full overflow-hidden"><div class="${headerClass} p-4 flex justify-between items-center rounded-t-[7px]"><div><h3 class="text-xl font-bold">${group.name}</h3><p class="text-xs mt-1 italic opacity-80">${group.note||''}</p></div><div class="flex items-center">${copyBtn}${editBtn}</div></div><div class="flex-grow p-1 overflow-y-auto max-h-80">${list.length?list:'<p class="text-sm text-slate-400 text-center py-4">無成員 (或被篩選隱藏)</p>'}</div>${footer}</div>`;
-        }).join('');
-        grid.insertAdjacentHTML('beforeend', groupsHTML);
-    },
-
-    toggleGvgStatus: function(groupId, memberId, action) {
-        // 開放權限：移除管理者檢查，讓所有人皆可操作
-        const group = this.groups.find(g => g.id === groupId); if(!group) return;
-        const index = group.members.findIndex(m => (typeof m === 'string' ? m : m.id) === memberId);
-        if (index === -1) return;
-
-        let m = group.members[index];
-        if (typeof m === 'string') m = { id: m, status: 'pending', subId: null };
-
-        if (action === 'leave') {
-            if (m.status === 'leave') { m.status = 'pending'; m.subId = null; }
-            else { m.status = 'leave'; } 
-        } else if (action === 'ready_toggle') {
-            if (m.status === 'leave') { m.status = 'ready'; m.subId = null; } 
-            else { m.status = (m.status === 'ready') ? 'pending' : 'ready'; }
-        }
-        group.members[index] = m;
-        this.saveGroupUpdate(group);
-    },
-
-    updateGvgSub: function(groupId, memberId, subId) {
-        const group = this.groups.find(g => g.id === groupId); if(!group) return;
-        const index = group.members.findIndex(m => (typeof m === 'string' ? m : m.id) === memberId);
-        if (index === -1) return;
-        let m = group.members[index];
-        if (typeof m === 'string') m = { id: m, status: 'pending' };
-        m.subId = subId; 
-        group.members[index] = m;
-        this.saveGroupUpdate(group);
-    },
-
-    saveGroupUpdate: function(group) {
-        if (this.mode === 'firebase') this.db.collection(COLLECTION_NAMES.GROUPS).doc(group.id).update({ members: group.members });
-        else this.saveLocal('groups');
-    },
-    
-    openSquadModal: function(id) {
-        const type = this.currentTab === 'gvg' ? 'gvg' : 'groups';
-        if(!['master', 'admin', 'commander'].includes(this.userRole)) return; 
-
-        document.getElementById('squadId').value = id || ''; 
-        document.getElementById('squadType').value = type;
-        document.getElementById('memberSearch').value = '';
-        document.getElementById('squadModalTitle').innerText = id ? '編輯隊伍' : '新增隊伍';
-
-        // 重置彈窗篩選器
-        this.currentModalRoleFilter = 'all';
-
-        // 動態注入篩選按鈕
-        const searchInput = document.getElementById('memberSearch');
-        if (searchInput && !document.getElementById('modalFilterContainer')) {
-            const filterDiv = document.createElement('div');
-            filterDiv.id = 'modalFilterContainer';
-            filterDiv.className = "flex gap-2 mb-2 mt-2";
-            const filters = [
-                {id: 'all', label: '全部', class: 'bg-slate-800 text-white'},
-                {id: '輸出', label: '輸出', class: 'bg-red-500 text-white'},
-                {id: '輔助', label: '輔助', class: 'bg-green-500 text-white'},
-                {id: '坦', label: '坦克', class: 'bg-blue-500 text-white'}
-            ];
-            filterDiv.innerHTML = filters.map(f => `
-                <button type="button" 
-                        data-filter="${f.id}" 
-                        data-active-class="${f.class}"
-                        onclick="app.setModalRoleFilter('${f.id}')" 
-                        class="px-3 py-1 rounded text-xs font-bold transition whitespace-nowrap ${f.id==='all'? f.class : 'bg-white text-slate-600 border border-slate-200'}">
-                    ${f.label}
-                </button>
-            `).join('');
-            searchInput.parentNode.insertAdjacentElement('afterend', filterDiv);
-        }
-
-        if(id) {
-            const g = this.groups.find(g => g.id === id);
-            document.getElementById('squadName').value = g.name; document.getElementById('squadNote').value = g.note;
-            document.getElementById('deleteSquadBtnContainer').innerHTML = `<button type="button" onclick="app.deleteSquad('${id}')" class="text-red-500 text-sm hover:underline">解散</button>`;
-            
-            this.currentSquadMembers = g.members.map(m => typeof m === 'string' ? {id: m, status: 'pending'} : m);
-            this.renderSquadMemberSelect(); 
-            
-            const leaderSelect = document.getElementById('squadLeader');
-            if(leaderSelect) {
-                leaderSelect.value = g.leaderId || "";
-            }
-        } else {
-            document.getElementById('squadName').value = ''; document.getElementById('squadNote').value = '';
-            document.getElementById('deleteSquadBtnContainer').innerHTML = '';
-            this.currentSquadMembers = [];
-            this.renderSquadMemberSelect();
-        }
-        
-        app.showModal('squadModal');
-    },
-
-    toggleSquadMember: function(id) {
-        const index = this.currentSquadMembers.findIndex(m => m.id === id);
-        const limit = this.currentTab === 'gvg' ? 5 : 12;
-
-        if (index > -1) { this.currentSquadMembers.splice(index, 1); } 
-        else { 
-            if (this.currentSquadMembers.length >= limit) { alert(`此類型隊伍最多 ${limit} 人`); return; }
-            this.currentSquadMembers.push({ id: id, status: 'pending' }); 
-        }
-        this.renderSquadMemberSelect();
-    },
-
-    renderSquadMemberSelect: function() {
-        const search = document.getElementById('memberSearch').value.toLowerCase();
-        let availableMembers = [...this.members];
-        
-        const filtered = availableMembers.filter(m => {
-            const matchSearch = (m.gameName + m.lineName + m.mainClass + (m.role||'')).toLowerCase().includes(search);
-            let matchRole = true;
-            if (this.currentModalRoleFilter !== 'all') {
-                const f = this.currentModalRoleFilter;
-                matchRole = m.role.includes(f) || (f === '坦' && m.mainClass.includes('坦'));
-            }
-            return matchSearch && matchRole;
-        });
-
-        const isSelected = (mid) => this.currentSquadMembers.some(sm => sm.id === mid);
-        filtered.sort((a,b) => (isSelected(a.id) === isSelected(b.id)) ? 0 : isSelected(a.id) ? -1 : 1);
-        
-        const count = this.currentSquadMembers.length;
-        const limit = this.currentTab === 'gvg' ? 5 : 12;
-        document.getElementById('selectedCount').innerText = `${count}/${limit}`;
-        
-        document.getElementById('squadMemberSelect').innerHTML = filtered.map(m => {
-            const checked = isSelected(m.id);
-            const style = JOB_STYLES.find(s => s.key.some(k => (m.mainClass||'').includes(k))) || { class: 'bg-job-default', icon: 'fa-user' };
-            return `
-            <label class="flex items-center space-x-2 p-2 rounded border border-blue-100 transition select-none ${checked ? 'bg-blue-50 border-blue-300' : 'hover:bg-slate-50 bg-white cursor-pointer'}">
-                <input type="checkbox" value="${m.id}" class="rounded text-blue-500" ${checked?'checked':''} onchange="app.toggleSquadMember('${m.id}')">
-                <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs ${style.class.replace('bg-', 'text-')} bg-opacity-20"><i class="fas ${style.icon}"></i></div>
-                <div class="min-w-0 flex-grow">
-                    <div class="text-xs font-bold text-slate-700 truncate">${m.gameName}</div>
-                    <div class="text-[10px] text-slate-400">${m.mainClass.split('(')[0]} <span class="${m.role.includes('輸出')?'text-red-400':m.role.includes('坦')?'text-blue-400':'text-green-400'}">${m.role}</span></div>
-                </div>
-            </label>`;
-        }).join('');
-
-        // 強制更新隊長選單 (修復固定團空白問題)
-        this.updateLeaderOptions();
-    },
-
-    // (FIX) 修正後的隊長選單邏輯
-    updateLeaderOptions: function() {
-        const select = document.getElementById('squadLeader');
-        if (!select) return;
-        
-        const currentVal = select.value; 
-        select.innerHTML = '<option value="">未指定</option>';
-        
-        this.currentSquadMembers.forEach(sm => {
-            // 無論 sm 是物件 {id:'...'} 還是字串 '...', 都能正確取出 ID
-            const mid = (typeof sm === 'string') ? sm : sm.id;
-            const mem = this.members.find(m => m.id === mid);
-            if (mem) {
-                const opt = document.createElement('option');
-                opt.value = mem.id;
-                opt.innerText = mem.gameName;
-                select.appendChild(opt);
-            }
-        });
-
-        // 如果之前選的隊長還在名單中，就保持選取
-        if (currentVal && this.currentSquadMembers.some(sm => (typeof sm === 'string' ? sm : sm.id) === currentVal)) {
-            select.value = currentVal;
-        } else {
-            select.value = "";
-        }
-    },
-    
-    saveSquad: async function() {
-        if (!['master', 'admin', 'commander'].includes(this.userRole)) return;
-        const id = document.getElementById('squadId').value;
-        const type = document.getElementById('squadType').value;
-        const name = document.getElementById('squadName').value;
-        const note = document.getElementById('squadNote').value;
-        const leaderId = document.getElementById('squadLeader').value; 
-        const selectedMembers = [...this.currentSquadMembers];
-        
-        if(!name) { alert("請輸入隊伍名稱"); return; }
-        if (type === 'gvg' && selectedMembers.length !== 5) { alert("GVG 隊伍建議為 5 人 (目前: " + selectedMembers.length + ")"); }
-        
-        const squadData = { name, note, members: selectedMembers, type, leaderId }; 
-        if (id) {
-            if (this.mode === 'firebase') await this.db.collection(COLLECTION_NAMES.GROUPS).doc(id).update(squadData); 
-            else { const idx = this.groups.findIndex(g => g.id === id); if(idx !== -1) { this.groups[idx] = { ...this.groups[idx], ...squadData }; this.saveLocal('groups'); } }
-        } else {
-            if (this.mode === 'firebase') await this.db.collection(COLLECTION_NAMES.GROUPS).add(squadData); 
-            else { squadData.id = 'g_' + Date.now(); this.groups.push(squadData); this.saveLocal('groups'); }
-        }
-        this.logChange(id ? '隊伍更新' : '建立隊伍', `${name}`, id || 'new'); this.closeModal('squadModal');
-    },
-
-    deleteSquad: async function(id) {
-        if (!confirm("確定要解散這個隊伍嗎？")) return;
-        if (this.mode === 'firebase') await this.db.collection(COLLECTION_NAMES.GROUPS).doc(id).delete(); 
-        else { this.groups = this.groups.filter(g => g.id !== id); this.saveLocal('groups'); }
-        this.closeModal('squadModal');
-    },
-
-    // --- 4. 活動 (Activity) 邏輯 ---
-
-    renderActivities: function() {
-        const list = document.getElementById('activityList');
-        const emptyMsg = document.getElementById('noActivitiesMsg');
-        if (!this.activities || this.activities.length === 0) { list.innerHTML = ''; if(emptyMsg) emptyMsg.classList.remove('hidden'); return; }
-        if(emptyMsg) emptyMsg.classList.add('hidden');
-
-        list.innerHTML = this.activities.map(act => {
-            const winnersList = (act.winners || []).map((w, idx) => {
-                const mem = this.members.find(m => m.id === w.memberId);
-                const name = mem ? mem.gameName : 'Unknown';
-                const job = mem ? mem.mainClass : '-';
-                let timeStr = "";
-                if(w.claimedAt) {
-                    const d = new Date(w.claimedAt);
-                    timeStr = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-                }
-
-                const isMaster = this.userRole === 'master';
-                const lightClass = w.claimed ? 'claimed' : 'unclaimed';
-                const clickAction = (isMaster && !w.claimed) ? `onclick="app.handleClaimReward('${act.id}', ${idx})"` : '';
-                const titleText = w.claimed ? `已於 ${timeStr} 領取` : (isMaster ? '點擊發放獎勵 (立即紀錄)' : '未領取');
-
-                return `
-                <div class="flex justify-between items-center py-3 border-b border-slate-100 last:border-0">
-                    <div class="flex flex-col">
-                        <span class="font-bold text-slate-700 text-sm">${name}</span>
-                        <span class="text-xs text-slate-400">${job}</span>
-                        ${w.claimed ? `<span class="text-[10px] text-green-600 font-mono mt-1">${timeStr} 已領</span>` : ''}
-                    </div>
-                    <div class="status-light ${lightClass}" ${clickAction} title="${titleText}"></div>
-                </div>`;
-            }).join('');
-
-            return `
-            <div class="bg-white rounded-xl border border-yellow-200 shadow-sm overflow-hidden flex flex-col">
-                <div class="bg-gradient-to-r from-orange-100 to-yellow-50 p-4 border-b border-yellow-200 flex justify-between items-start">
-                    <div>
-                        <h3 class="font-bold text-lg text-slate-800">${act.name}</h3>
-                        <p class="text-xs text-yellow-800 font-bold mt-1 bg-yellow-200 px-2 py-1 rounded inline-block">${act.note || '總獎勵詳見備註'}</p>
-                    </div>
-                    ${this.userRole === 'master' ? `<button onclick="app.openActivityModal('${act.id}')" class="text-slate-400 hover:text-blue-500"><i class="fas fa-edit"></i></button>` : ''}
-                </div>
-                <div class="p-4 bg-white flex-grow">
-                    ${winnersList.length ? winnersList : '<p class="text-center text-slate-400 text-sm py-4">名單確認中...</p>'}
-                </div>
-            </div>`;
-        }).join('');
-    },
-
-    handleClaimReward: async function(actId, winnerIdx) {
-        if(this.userRole !== 'master') return;
-        const actIndex = this.activities.findIndex(a => a.id === actId);
-        if(actIndex === -1) return;
-        let act = this.activities[actIndex];
-        if(!act.winners[winnerIdx]) return;
-        act.winners[winnerIdx].claimed = true;
-        act.winners[winnerIdx].claimedAt = Date.now();
-        act.winners[winnerIdx].claimedBy = 'Master';
-        if (this.mode === 'firebase') { await this.db.collection(COLLECTION_NAMES.ACTIVITIES).doc(actId).update({ winners: act.winners }); } 
-        else { this.activities[actIndex] = act; this.saveLocal('activities'); }
-    },
-
-    openActivityModal: function(id) {
-        if (this.userRole !== 'master') return;
-        document.getElementById('activityId').value = id || '';
-        document.getElementById('activityModalTitle').innerText = id ? '編輯' : '新增';
-        this.currentActivityWinners = [];
-
-        if (id) {
-            const act = this.activities.find(a => a.id === id);
-            if (act) {
-                document.getElementById('activityName').value = act.name;
-                document.getElementById('activityNote').value = act.note;
-                this.currentActivityWinners = act.winners ? [...act.winners] : [];
-                document.getElementById('deleteActivityBtnContainer').innerHTML = `<button type="button" onclick="app.deleteActivity('${id}')" class="text-red-500 text-sm hover:underline">刪除活動</button>`;
-            }
-        } else {
-            document.getElementById('activityName').value = '';
-            document.getElementById('activityNote').value = '';
-            document.getElementById('deleteActivityBtnContainer').innerHTML = '';
-        }
-        this.renderActivityWinnersList();
-        app.showModal('activityModal');
-    },
-
-    renderActivityWinnersList: function() {
-        const container = document.getElementById('winnerListContainer');
-        document.getElementById('winnerCount').innerText = this.currentActivityWinners.length;
-        if (this.currentActivityWinners.length === 0) { container.innerHTML = '<p class="text-center text-slate-400 py-6 text-sm">請選取得獎者。</p>'; return; }
-        container.innerHTML = this.currentActivityWinners.map((w, idx) => {
-            const mem = this.members.find(m => m.id === w.memberId);
-            return `
-                <div class="flex justify-between items-center bg-yellow-50 p-2 rounded border border-yellow-100">
-                    <span class="text-sm font-bold text-slate-700">${mem ? mem.gameName : 'Unknown'}</span>
-                    <button onclick="app.removeWinner(${idx})" class="text-red-400 hover:text-red-600"><i class="fas fa-times"></i></button>
-                </div>`;
-        }).join('');
-    },
-    removeWinner: function(idx) { this.currentActivityWinners.splice(idx, 1); this.renderActivityWinnersList(); },
-    saveActivity: async function() {
-        if (this.userRole !== 'master') return;
-        const id = document.getElementById('activityId').value, name = document.getElementById('activityName').value, note = document.getElementById('activityNote').value;
-        if (!name) { alert("請輸入活動名稱"); return; }
-        const activityData = { name, note, winners: this.currentActivityWinners };
-        if (id) {
-            if (this.mode === 'firebase') await this.db.collection(COLLECTION_NAMES.ACTIVITIES).doc(id).update(activityData);
-            else { const idx = this.activities.findIndex(a => a.id === id); if (idx !== -1) { this.activities[idx] = { ...this.activities[idx], ...activityData }; this.saveLocal('activities'); } }
-        } else {
-            if (this.mode === 'firebase') await this.db.collection(COLLECTION_NAMES.ACTIVITIES).add(activityData);
-            else { activityData.id = 'act_' + Date.now(); this.activities.push(activityData); this.saveLocal('activities'); }
-        }
-        this.closeModal('activityModal'); this.renderActivities();
-    },
-    deleteActivity: async function(id) {
-        if (this.userRole !== 'master') return; if (!confirm("確定要刪除此活動嗎？")) return;
-        if (this.mode === 'firebase') await this.db.collection(COLLECTION_NAMES.ACTIVITIES).doc(id).delete();
-        else { this.activities = this.activities.filter(a => a.id !== id); this.saveLocal('activities'); }
-        this.closeModal('activityModal'); this.renderActivities();
-    },
-
-    // --- Winner Selection Utils (保持不變) ---
-    openWinnerSelectionModal: function() { this.tempWinnerSelection = this.currentActivityWinners.map(w => w.memberId); document.getElementById('winnerSearchInput').value = ''; this.renderWinnerMemberSelect(); app.showModal('winnerSelectionModal'); },
-    renderWinnerMemberSelect: function() {
-        const search = document.getElementById('winnerSearchInput').value.toLowerCase();
-        let list = [...this.members].sort((a, b) => { const aSel = this.tempWinnerSelection.includes(a.id), bSel = this.tempWinnerSelection.includes(b.id); return (aSel && !bSel) ? -1 : (!aSel && bSel) ? 1 : (a.gameName||'').localeCompare(b.gameName||''); });
-        if (search) list = list.filter(m => (m.gameName + m.lineName).toLowerCase().includes(search));
-        document.getElementById('winnerMemberSelect').innerHTML = list.map(m => {
-            const isSelected = this.tempWinnerSelection.includes(m.id);
-            return `<label class="flex items-center space-x-2 p-2 rounded border transition cursor-pointer ${isSelected ? 'bg-blue-50 border-blue-200' : 'bg-white border-slate-100 hover:bg-slate-50'}"><input type="checkbox" value="${m.id}" class="rounded text-blue-500" ${isSelected ? 'checked' : ''} onchange="app.toggleWinnerCandidate('${m.id}')"><div class="min-w-0"><div class="text-sm font-bold text-slate-700">${m.gameName}</div><div class="text-xs text-slate-400">${m.mainClass}</div></div></label>`;
-        }).join('');
-    },
-    toggleWinnerCandidate: function(id) { const idx = this.tempWinnerSelection.indexOf(id); if (idx === -1) this.tempWinnerSelection.push(id); else this.tempWinnerSelection.splice(idx, 1); this.renderWinnerMemberSelect(); },
-    performLuckyDraw: function() {
-        const search = document.getElementById('winnerSearchInput').value.toLowerCase();
-        const candidates = this.members.filter(m => (m.gameName + m.lineName).toLowerCase().includes(search) && !this.tempWinnerSelection.includes(m.id));
-        if (candidates.length === 0) { alert("無人可抽！"); return; }
-        const lucky = candidates[Math.floor(Math.random() * candidates.length)];
-        this.tempWinnerSelection.push(lucky.id); alert(`🎉 抽中：${lucky.gameName}`); this.renderWinnerMemberSelect();
-    },
-    confirmWinnerSelection: function() {
-        this.currentActivityWinners = this.tempWinnerSelection.map(mid => this.currentActivityWinners.find(w => w.memberId === mid) || { memberId: mid, claimed: false });
-        this.renderActivityWinnersList(); this.closeModal('winnerSelectionModal');
-    },
-
-    // --- Utils ---
-    showHistoryModal: function() {
-        if (!['master', 'admin'].includes(this.userRole)) { alert("權限不足"); return; }
-        document.getElementById('historyList').innerHTML = this.history.map(log => {
-            const date = new Date(log.timestamp).toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
-            return `<div class="p-3 bg-slate-50 border border-slate-200 rounded-lg"><div class="flex justify-between items-center text-xs text-slate-500 font-mono mb-1"><span>${date}</span><span class="${log.action.includes('刪除')?'text-red-600':'text-blue-600'} font-bold">${log.action}</span></div><p class="text-sm text-slate-800">${log.details}</p></div>`;
-        }).join('') || '<p class="text-center text-slate-400 mt-4">尚無紀錄。</p>';
-        this.showModal('historyModal');
-    },
-    
-    // 複製邏輯 (智慧替補替換 + 隊長顯示)
-    copyText: function(el, text) { navigator.clipboard.writeText(text).then(() => { el.classList.add('copied'); setTimeout(() => el.classList.remove('copied'), 1500); }).catch(() => alert("複製失敗")); },
-    copySquadList: function(gid) {
-        let id = gid || document.getElementById('squadId').value; if(!id) return;
-        const g = this.groups.find(g => g.id === id);
-        
-        // 取得隊長名稱
-        const leaderMem = g.leaderId ? this.members.find(m => m.id === g.leaderId) : null;
-        const leaderName = leaderMem ? leaderMem.gameName : '未指定';
-
-        // 標題格式更新
-        let txt = `【${g.name}】 - 隊長：${leaderName}\n`;
-        
-        txt += g.members.map(m => {
-            const isObj = typeof m !== 'string';
-            const originalId = isObj ? m.id : m;
-            let targetId = originalId;
-            let suffix = "";
-
-            // 核心邏輯：如果是請假(leave)且有替補(subId)，直接換成替補人員
-            if (isObj && m.status === 'leave' && m.subId) {
-                targetId = m.subId;
-                suffix = "(替補)";
-            } else if (isObj && m.status === 'leave') {
-                suffix = "(請假)";
-            }
-
-            const mem = this.members.find(x => x.id === targetId);
-            return mem ? `${mem.gameName} ${mem.mainClass.split('(')[0]} ${suffix}` : 'Unknown';
-        }).join('\n');
-
-        navigator.clipboard.writeText(txt).then(() => alert("已複製隊伍名單！\n(如有替補已自動替換)"));
-    },
-    exportCSV: function() {
-        let csv = "\uFEFFLINE 暱稱,遊戲 ID,主職業,定位,公會職位,備註\n";
-        this.members.forEach(m => csv += `"${m.lineName}","${m.gameName}","${m.mainClass}","${m.role}","${m.rank||'成員'}","${(m.intro||'').replace(/"/g, '""')}"\n`);
-        const link = document.createElement("a"); link.href = encodeURI("data:text/csv;charset=utf-8," + csv); link.download = "ROW成員.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link);
-    },
-    downloadSelf: function() {
-        const backupData = { members: this.members, groups: this.groups, activities: this.activities, history: this.history };
-        const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([JSON.stringify(backupData, null, 2)], {type: "application/json"})); link.download = `ROW_Backup_${new Date().toISOString().slice(0,10)}.json`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
-    },
-    updateConfigInput: function(str) { const el = document.getElementById('firebaseConfigInput'); if(el) el.value = str; },
-    saveConfig: function() { try { const config = JSON.parse(document.getElementById('firebaseConfigInput').value); if (!config.apiKey) throw new Error(); localStorage.setItem('row_firebase_config', JSON.stringify(config)); location.reload(); } catch { alert("JSON 格式錯誤！"); } },
-    resetToDemo: function() { if (!confirm("確定要重置所有資料嗎？")) return; localStorage.clear(); location.reload(); },
-    showModal: function(id) { document.getElementById(id).classList.remove('hidden'); },
-    closeModal: function(id) { document.getElementById(id).classList.add('hidden'); }
-};
-
-window.app = App;
-window.onload = () => App.init();
+    <script src="./js/config.js"></script> 
+    <script type="module" src="./js/app.js"></script> 
+</body>
+</html>
