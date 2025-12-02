@@ -1,9 +1,10 @@
 // config.js
+
 // 應用程式的靜態配置、集合名稱和初始資料。
 
 // --- 全域應用程式設定 ---
-// 注意：若部署在 GitHub 上，公開的 API Key 應搭配嚴謹的 Firestore Security Rules
-export const FIREBASE_CONFIG = {
+// 這是您提供的 Firebase 配置，已使用 const 而非 export const
+const FIREBASE_CONFIG = {
     apiKey: "AIzaSyCxVEcgftiu7qmHhgLV-XaLzf6naBhaf-k",
     authDomain: "ro123-aae1e.firebaseapp.com",
     projectId: "ro123-aae1e",
@@ -13,18 +14,17 @@ export const FIREBASE_CONFIG = {
     measurementId: "G-SVYZGQZB83"
 };
 
-export const APP_ENV = 'production'; // 全域變數，標記這是正式版環境
+const APP_ENV = 'production';
 
 // --- Firebase / Firestore Configuration ---
-// 這是應用程式在 Firestore 中的集合名稱
-export const COLLECTION_NAMES = {
+const COLLECTION_NAMES = {
     MEMBERS: 'members',
     GROUPS: 'groups',
-    ACTIVITIES: 'activities', // NEW: 活動集合
+    ACTIVITIES: 'activities', 
 };
 
 // --- Job / Role Configuration ---
-export const JOB_STYLES = [
+const JOB_STYLES = [
     { key: ['騎士'], class: 'bg-job-knight', icon: 'fa-shield-alt' }, { key: ['十字軍'], class: 'bg-job-crusader', icon: 'fa-cross' }, { key: ['鐵匠', '商人'], class: 'bg-job-blacksmith', icon: 'fa-hammer' },
     { key: ['獵人', '弓箭手'], class: 'bg-job-hunter', icon: 'fa-crosshairs' }, { key: ['詩人'], class: 'bg-job-bard', icon: 'fa-music' }, { key: ['煉金'], class: 'bg-job-alchemist', icon: 'fa-flask' },
     { key: ['神官', '服事', '牧師'], class: 'bg-job-priest', icon: 'fa-plus' }, { key: ['武僧'], class: 'bg-job-monk', icon: 'fa-fist-raised' }, { key: ['巫師', '法師'], class: 'bg-job-wizard', icon: 'fa-hat-wizard' },
@@ -32,7 +32,7 @@ export const JOB_STYLES = [
     { key: ['刺客', '盜賊'], class: 'bg-job-assassin', icon: 'fa-skull' }, { key: ['流氓'], class: 'bg-job-rogue', icon: 'fa-mask' }
 ];
 
-export const JOB_STRUCTURE = {
+const JOB_STRUCTURE = {
     "騎士": ["龍", "敏爆", "其他"], "十字軍": ["坦", "輸出", "其他"], "鐵匠": ["戰鐵", "鍛造", "其他"], "煉金": ["一般", "其他"],
     "獵人": ["鳥", "陷阱", "AD", "其他"], "詩人": ["輔助", "輸出", "其他"], "舞孃": ["輔助", "輸出", "其他"],
     "神官": ["讚美", "驅魔", "暴牧", "其他"], "武僧": ["連技", "阿修", "其他"], "巫師": ["隕石", "冰雷", "其他"],
@@ -41,7 +41,7 @@ export const JOB_STRUCTURE = {
 };
 
 // --- Seed Data (初始資料) ---
-export const SEED_DATA = [
+const SEED_DATA = [
     { id: "m01", lineName: "poppy🐶", gameName: "YT清燉小羔羊", mainClass: "神官(讚美)", role: "輔助", rank: "會長", intro: "公會唯一清流 出淤泥而不染" },
     { id: "m02", lineName: "#Yuan", gameName: "沐沐", mainClass: "神官(讚美)", role: "輔助", rank: "資料管理員", intro: "" },
     { id: "m03", lineName: "Lam 🦄", gameName: "孤芳自賞", mainClass: "獵人(陷阱)", role: "輸出", rank: "成員", intro: "" },
@@ -110,43 +110,41 @@ export const SEED_DATA = [
     { id: "m66", lineName: "仲軒", gameName: "熊熊很大", mainClass: "法師(隕)", role: "輸出", rank: "成員", intro: "" },
     { id: "m67", lineName: "航", gameName: "小波", mainClass: "獵人(鳥)", role: "輸出", rank: "成員", intro: "" },
     { id: "m68", lineName: "Pogin", gameName: "Pogin", mainClass: "詩人", role: "輔助", rank: "成員", intro: "待領養孤兒, 哈啾老公" },
-    { id: "m69", lineName: "咩假屁謀", mainClass: "", role: "待定", rank: "成員", intro: "" },
+    { id: "m69", lineName: "咩假屁謀", gameName: "", mainClass: "", role: "待定", rank: "成員", intro: "" },
     { id: "m70", lineName: "廖琮昱", gameName: "果仔", mainClass: "賢者", role: "待定", rank: "成員", intro: "" },
     { id: "m71", lineName: "鍾豐年", gameName: "daliesi", mainClass: "刺客(毒)", role: "輔助", rank: "成員", intro: "" },
     { id: "m72", lineName: "蔡家昕", gameName: "星夜", mainClass: "刺客(毒)", role: "輸出", rank: "成員", intro: "睡神無敵小弟" },
     { id: "m73", lineName: "NICK", gameName: "狗是水鏡", mainClass: "流氓(輸出)", role: "輸出", rank: "成員", intro: "" }
 ];
 
-export const SEED_GROUPS = [];
+const SEED_GROUPS = [];
 
-// NEW: 初始活動資料 (可設定一些範例活動)
-export const SEED_ACTIVITIES = [
-    { 
-        id: "a01", 
-        name: "聖誕節造型大賽", 
-        note: "評選最佳聖誕裝扮的成員，可獲得隨機稀有卡片一張。", 
+const SEED_ACTIVITIES = [
+    {
+        id: "a01",
+        name: "聖誕節造型大賽",
+        note: "評選最佳聖誕裝扮的成員，可獲得隨機稀有卡片一張。",
         winners: [
             { memberId: "m01", claimed: true, claimedBy: "poppy🐶", claimedAt: Date.now() - 86400000 * 3 },
             { memberId: "m20", claimed: false, claimedBy: null, claimedAt: null }
-        ] 
+        ]
     },
-    { 
-        id: "a02", 
-        name: "GVG 傷害王競賽", 
-        note: "輸出榜第一名的獎勵：現金 1,000,000 Zeny。", 
+    {
+        id: "a02",
+        name: "GVG 傷害王競賽",
+        note: "輸出榜第一名的獎勵：現金 1,000,000 Zeny。",
         winners: [
             { memberId: "m32", claimed: true, claimedBy: "poppy🐶", claimedAt: Date.now() }
-        ] 
+        ]
     }
 ];
 
-// 應用程式版本控制 (用於 Demo Mode 的數據升級)
-export const APP_VERSION = '7.0'; // Updated version for Activity feature
+const APP_VERSION = '7.0';
 
-// 導出所有配置
-export default {
-    FIREBASE_CONFIG, // Export added to default
-    APP_ENV, // Export added to default
+// 將所有配置變數掛載到全域物件 (window.AppConfig)，供 app.js 存取
+window.AppConfig = {
+    FIREBASE_CONFIG,
+    APP_ENV,
     COLLECTION_NAMES,
     JOB_STYLES,
     JOB_STRUCTURE,
