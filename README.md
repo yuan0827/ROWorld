@@ -281,34 +281,36 @@
 
     <div class="bg-clouds"></div>
 
-    <header class="sticky top-0 z-50 w-full shadow-md">
+ <header class="sticky top-0 z-50 w-full shadow-md">
         <nav class="bg-white/90 backdrop-blur border-b border-white/50 px-4 py-3 flex justify-between items-center safe-area-top w-full"> 
-            <div class="flex items-center space-x-3 cursor-pointer" onclick="app.switchTab('home')">
-                <div class="w-9 h-9 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md shadow-blue-200 border border-white font-cute">
-                    RO
-                </div>
-                <div>
-                    <h1 class="text-lg font-black text-slate-700 leading-tight tracking-tight font-cute">躺著不想動</h1>
-                </div>
-            </div>
-            <div class="flex items-center space-x-2">
-                <button onclick="app.openLoginModal()" id="adminToggleBtn" class="p-2 text-slate-400 hover:text-blue-500 transition rounded-xl border border-transparent" title="管理登入"><i class="fas fa-user-shield"></i></button>
-                <div id="adminControls" class="flex items-center space-x-2 hidden">
-                    <div class="relative group">
-                        <button class="p-2 text-slate-500 hover:text-blue-600 transition bg-blue-50 rounded-lg" title="下載/匯出"><i class="fas fa-download"></i></button>
-                        <div class="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden hidden group-hover:block z-[60]">
-                            <button onclick="app.downloadSelf()" class="w-full text-left px-4 py-3 hover:bg-slate-50 text-sm text-slate-700 flex items-center"><i class="fas fa-file-code mr-2 text-blue-500"></i> 下載本網頁</button>
-                            <button onclick="app.exportCSV()" class="w-full text-left px-4 py-3 hover:bg-slate-50 text-sm text-slate-700 flex items-center border-t border-slate-100"><i class="fas fa-file-csv mr-2 text-green-500"></i> 匯出 CSV</button>
-                        </div>
+            <div class="w-full mx-auto max-w-7xl flex justify-between items-center">
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="app.switchTab('home')">
+                    <div class="w-9 h-9 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md shadow-blue-200 border border-white font-cute">
+                        RO
                     </div>
-                    <button onclick="app.showModal('configModal')" class="p-2 text-slate-400 hover:text-blue-500 transition rounded-xl" title="設定"><i class="fas fa-cog"></i></button>
+                    <div>
+                        <h1 class="text-lg font-black text-slate-700 leading-tight tracking-tight font-cute">躺著不想動</h1>
+                    </div>
                 </div>
-                <button onclick="app.handleMainAction()" class="bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-200 px-3 py-2 rounded-xl font-bold transition flex items-center text-sm transform active:scale-95 border-b-4 border-blue-700" title="新增"><i class="fas fa-plus"></i></button>
+                <div class="flex items-center space-x-2">
+                    <button onclick="app.openLoginModal()" id="adminToggleBtn" class="p-2 text-slate-400 hover:text-blue-500 transition rounded-xl border border-transparent" title="管理登入"><i class="fas fa-user-shield"></i></button>
+                    <div id="adminControls" class="flex items-center space-x-2 hidden">
+                        <div class="relative group">
+                            <button class="p-2 text-slate-500 hover:text-blue-600 transition bg-blue-50 rounded-lg" title="下載/匯出"><i class="fas fa-download"></i></button>
+                            <div class="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden hidden group-hover:block z-[60]">
+                                <button onclick="app.downloadSelf()" class="w-full text-left px-4 py-3 hover:bg-slate-50 text-sm text-slate-700 flex items-center"><i class="fas fa-file-code mr-2 text-blue-500"></i> 下載本網頁</button>
+                                <button onclick="app.exportCSV()" class="w-full text-left px-4 py-3 hover:bg-slate-50 text-sm text-slate-700 flex items-center border-t border-slate-100"><i class="fas fa-file-csv mr-2 text-green-500"></i> 匯出 CSV</button>
+                            </div>
+                        </div>
+                        <button onclick="app.showModal('configModal')" class="p-2 text-slate-400 hover:text-blue-500 transition rounded-xl" title="設定"><i class="fas fa-cog"></i></button>
+                    </div>
+                    <button onclick="app.handleMainAction()" class="bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-200 px-3 py-2 rounded-xl font-bold transition flex items-center text-sm transform active:scale-95 border-b-4 border-blue-700" title="新增"><i class="fas fa-plus"></i></button>
+                </div>
             </div>
         </nav>
 
         <div class="bg-white/30 backdrop-blur border-b border-white/40 z-40" id="nav-container">
-            <div class="px-4 py-2 flex space-x-2 overflow-x-auto scroll-hide w-full"> 
+            <div class="mx-auto max-w-7xl px-4 py-2 flex space-x-2 overflow-x-auto scroll-hide w-full"> 
                 <button onclick="app.switchTab('home')" id="tab-home" class="nav-pill"><i class="fas fa-home mr-1"></i> 首頁</button>
                 <button onclick="app.switchTab('members')" id="tab-members" class="nav-pill"><i class="fas fa-users mr-1"></i> 名冊</button>
                 <button onclick="app.switchTab('gvg')" id="tab-gvg" class="nav-pill"><i class="fas fa-shield-alt mr-1"></i> GVG</button>
@@ -316,7 +318,7 @@
             </div>
         </div>
     </header>
-    <main class="flex-grow container mx-auto p-4 md:p-6 space-y-6 max-w-7xl safe-area-bottom">
+    <main class="flex-grow mx-auto p-4 md:p-6 space-y-6 max-w-7xl safe-area-bottom w-full">
         
         <div id="view-home" class="animate-fade-in relative">
             
