@@ -40,11 +40,11 @@ tailwind.config = {
             }
         }
     }
-}; // ** 確保這個分號存在 **
+};
 
 
 // ** 2. 常量與初始數據 **
-const DATA_VERSION = "7.1"; // 最終穩定語法修復版
+const DATA_VERSION = "7.2"; // 最終語法結構優化版
 const JOB_STYLES = [
     { key: ['騎士'], class: 'bg-job-knight', icon: 'fa-shield-alt' }, { key: ['十字軍'], class: 'bg-job-crusader', icon: 'fa-cross' }, { key: ['鐵匠', '商人'], class: 'bg-job-blacksmith', icon: 'fa-hammer' },
     { key: ['獵人', '弓箭手'], class: 'bg-job-hunter', icon: 'fa-crosshairs' }, { key: ['詩人'], class: 'bg-job-bard', icon: 'fa-music' }, { key: ['煉金'], class: 'bg-job-alchemist', icon: 'fa-flask' },
@@ -92,8 +92,8 @@ const SEED_DATA = [
     { lineName: "浩", gameName: "YT泰愛玩遊戲直bo", mainClass: "槍手", role: "輸出", rank: "成員", intro: "" },
     { lineName: "六六", gameName: "六六", mainClass: "十字軍(坦)", role: "坦", rank: "成員", intro: "" },
     { lineName: "灬森灬", gameName: "大雄", mainClass: "槍手", role: "輸出", rank: "成員", intro: "" },
-    { lineName: "陳小貓", gameName: "貓璃", mainClass: "刺客", role: "輸出", rank: "成員", intro: "睡神無敵朋友" },
-    { lineName: "pei.yu.yang", gameName: "迪卡普歐", mainClass: "鐵匠", role: "待定", rank: "成員", intro: "睡神無敵麻吉" },
+    { lineName: "陳小貓", gameName: "貓璃", mainClass: "刺客", role: "輸出", rank: "成員", intro: "" },
+    { lineName: "pei.yu.yang", gameName: "迪卡普歐", mainClass: "鐵匠", role: "待定", rank: "成員", intro: "" },
     { lineName: "A-Wei 黃執維", gameName: "睡神無敵", mainClass: "獵人(鳥)", role: "輸出", rank: "成員", intro: "睡神就是無敵" },
     { lineName: "阿揚", gameName: "牧牧", mainClass: "槍手", role: "輸出", rank: "成員", intro: "待領養孤兒" },
     { lineName: "徐小宏🖖🏼", gameName: "莫忘中出", mainClass: "槍手", role: "輸出", rank: "成員", intro: "" },
@@ -264,7 +264,6 @@ const App = {
         }
     },
     
-    // ... (Log functions) ...
     loadHistory: function() {
         if (this.mode === 'demo') {
             const storedHistory = localStorage.getItem('row_mod_history');
@@ -780,4 +779,5 @@ const App = {
     }
 };
 
-window.app = App; window.onload = () => App.init();
+window.app = App; // ** 確保 App 變數正確地成為全域變數 **
+window.onload = () => App.init();
