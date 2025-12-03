@@ -15,11 +15,14 @@ const App = {
     db: null, auth: null,
     members: [], groups: [], activities: [], history: [],
     currentTab: 'home', 
-    currentFilter: 'all', currentJobFilter: 'all', // 名冊頁面的篩選
-    currentSquadRoleFilter: 'all', // GVG/隊伍列表頁面的篩選
-    currentModalRoleFilter: 'all', // 編輯隊伍視窗內的篩選
+    currentFilter: 'all', currentJobFilter: 'all', 
+    currentSquadRoleFilter: 'all', 
+    currentModalRoleFilter: 'all', 
     mode: 'demo', userRole: 'guest',
     currentSquadMembers: [], currentActivityWinners: [], tempWinnerSelection: [],
+
+    // 定義基準時間：2023/1/1 (用於鎖定元老成員順序)
+    BASE_TIME: new Date('2023-01-01').getTime(),
 
     init: async function() {
         this.loadLocalState();
@@ -27,6 +30,22 @@ const App = {
         this.updateAdminUI();
         this.populateJobSelects();
         this.switchTab('home');
+    },
+
+    // --- (關鍵修復) 資料標準化函數 ---
+    // 無論資料從哪裡來(Local/Firebase)，都要經過這裡清洗
+    normalizeMemberData: function(m) {
+        // 1. 檢查是否為初始種子成員 (依照 ID 對照)
+        const seedIndex = SEED_DATA.findIndex(seed => seed.id === m.id);
+        
+        if (seedIndex !== -1) {
+            // 是元老：強制賦予固定且很舊的時間戳記 (依照 SEED 順序)
+            // m01 = base, m02 = base + 1000ms...
+            return { ...m, createdAt: this.BASE_TIME + (seedIndex * 1000) };
+        } else {
+            // 是新成員：如果沒有時間戳記，給予現在時間；如果有，保持原樣
+            return { ...m, createdAt: m.createdAt || Date.now() };
+        }
     },
 
     loadLocalState: function() {
@@ -38,38 +57,16 @@ const App = {
         const storedAct = localStorage.getItem('row_local_activities');
         const storedHistory = localStorage.getItem('row_mod_history');
         
-        // --- 排序修正核心邏輯 ---
-        let currentMembers = storedMem ? JSON.parse(storedMem) : SEED_DATA;
+        let rawMembers = storedMem ? JSON.parse(storedMem) : SEED_DATA;
         
-        // 設定一個基準舊時間 (2023/1/1)
-        const baseTime = new Date('2023-01-01').getTime();
-
-        // 強制校正：遍歷所有成員，如果是「初始種子成員」，強制重設時間戳記
-        this.members = currentMembers.map(m => {
-            // 檢查此成員是否在 SEED_DATA 中 (依據 ID)
-            const seedIndex = SEED_DATA.findIndex(seed => seed.id === m.id);
-            
-            if (seedIndex !== -1) {
-                // [關鍵修復] 是初始成員 -> 忽視 localStorage 的舊時間，強制依照 SEED 順序給予時間
-                // m01 = baseTime, m02 = baseTime + 1000ms...
-                return { ...m, createdAt: baseTime + (seedIndex * 1000) };
-            } else {
-                // 是後來手動新增的成員 -> 保留原本的時間 (若無則給現在時間)
-                return { ...m, createdAt: m.createdAt || Date.now() };
-            }
-        });
+        // 應用標準化邏輯
+        this.members = rawMembers.map(m => this.normalizeMemberData(m));
 
         this.groups = storedGrp ? JSON.parse(storedGrp) : SEED_GROUPS;
         this.activities = storedAct ? JSON.parse(storedAct) : (SEED_ACTIVITIES || []);
         this.history = storedHistory ? JSON.parse(storedHistory) : [];
         
-        // 執行排序：由舊到新
         this.members = this.sortMembers(this.members);
-        
-        // 立即存回 LocalStorage 以修正錯誤的快取
-        if (this.mode === 'demo') {
-            this.saveLocal('members');
-        }
     },
 
     initFirebase: function() {
@@ -94,9 +91,15 @@ const App = {
     syncWithFirebase: function() {
         if (!this.db || this.mode !== 'firebase') return;
         
+        // --- (關鍵修復) 在接收雲端資料時，同樣執行標準化 ---
         this.db.collection(COLLECTION_NAMES.MEMBERS).onSnapshot(snap => { 
-            const arr = []; snap.forEach(d => arr.push({ id: d.id, ...d.data() })); 
-            this.members = this.sortMembers(arr); 
+            const rawArr = []; 
+            snap.forEach(d => rawArr.push({ id: d.id, ...d.data() })); 
+            
+            // 這裡也要跑一次 normalize，防止雲端舊資料覆蓋本地正確排序
+            const fixedArr = rawArr.map(m => this.normalizeMemberData(m));
+            
+            this.members = this.sortMembers(fixedArr); 
             this.saveLocal('members'); 
             this.render(); 
         });
@@ -118,16 +121,14 @@ const App = {
         }
     },
 
-    // --- 排序邏輯：由舊到新 (Ascending) ---
+    // 排序：由舊到新 (Ascending)
     sortMembers: function(membersArray) {
         return membersArray.sort((a, b) => {
-            // 升冪排序：時間小的(舊的)在前面
             const timeA = a.createdAt || 0;
             const timeB = b.createdAt || 0;
             if (timeA !== timeB) {
-                return timeA - timeB; 
+                return timeA - timeB; // 小的(舊的)在前
             }
-            // 時間相同則比對 ID
             return (a.id || '').localeCompare(b.id || '');
         });
     },
@@ -350,20 +351,35 @@ const App = {
         const baseJob = document.getElementById('baseJobSelect').value;
         if ((!mainClass || mainClass === "選擇流派") && baseJob) mainClass = baseJob;
         if (!mainClass) mainClass = "待定";
-        const member = { lineName: document.getElementById('lineName').value, gameName: document.getElementById('gameName').value, mainClass, role: document.getElementById('role').value, rank: document.getElementById('rank').value, intro: document.getElementById('intro').value };
         
-        // 確保新增成員時記錄時間戳記 (用於排序)
-        if (!id) member.createdAt = Date.now();
+        const memberData = { 
+            lineName: document.getElementById('lineName').value, 
+            gameName: document.getElementById('gameName').value, 
+            mainClass, 
+            role: document.getElementById('role').value, 
+            rank: document.getElementById('rank').value, 
+            intro: document.getElementById('intro').value 
+        };
         
-        if (id) await this.updateMember(id, member); else await this.addMember(member);
-        this.logChange(id?'成員更新':'新增成員', `${member.gameName}`, id || member.gameName); this.closeModal('editModal');
+        if (!id) {
+            // 新增成員：使用現在時間
+            memberData.createdAt = Date.now();
+            await this.addMember(memberData);
+        } else {
+            // 編輯成員：保留原有的 createdAt
+            const originalMember = this.members.find(m => m.id === id);
+            memberData.createdAt = originalMember ? originalMember.createdAt : Date.now();
+            await this.updateMember(id, memberData);
+        }
+        
+        this.logChange(id?'成員更新':'新增成員', `${memberData.gameName}`, id || memberData.gameName); 
+        this.closeModal('editModal');
     },
     addMember: async function(m) { 
         if (this.mode === 'firebase') {
-            await this.db.collection(COLLECTION_NAMES.MEMBERS).add({ ...m, createdAt: Date.now() }); 
+            await this.db.collection(COLLECTION_NAMES.MEMBERS).add(m); 
         } else { 
             m.id = 'm_' + Date.now(); 
-            m.createdAt = m.createdAt || Date.now(); 
             this.members.push(m); 
             this.members = this.sortMembers(this.members); 
             this.saveLocal('members'); 
@@ -776,15 +792,9 @@ const App = {
 
         list.innerHTML = this.activities.map(act => {
             const winnersList = (act.winners || []).map((w, idx) => {
-                
-                // (FIX) 處理退會成員顯示
-                const isRetired = w.isRetired; 
-                const member = this.members.find(m => m.id === w.memberId);
-
-                const name = isRetired ? w.retiredName : (member?.gameName || '未知 ID');
-                const job = isRetired ? w.retiredRole : (member?.mainClass || '-');
-                const retiredLabel = isRetired ? `<span class="text-red-500 font-bold ml-1 text-[10px]">(已退會)</span>` : '';
-                
+                const mem = this.members.find(m => m.id === w.memberId);
+                const name = mem ? mem.gameName : 'Unknown';
+                const job = mem ? mem.mainClass : '-';
                 let timeStr = "";
                 if(w.claimedAt) {
                     const d = new Date(w.claimedAt);
@@ -799,7 +809,7 @@ const App = {
                 return `
                 <div class="flex justify-between items-center py-3 border-b border-slate-100 last:border-0">
                     <div class="flex flex-col">
-                        <span class="font-bold text-slate-700 text-sm">${name} ${retiredLabel}</span>
+                        <span class="font-bold text-slate-700 text-sm">${name}</span>
                         <span class="text-xs text-slate-400">${job}</span>
                         ${w.claimed ? `<span class="text-[10px] text-green-600 font-mono mt-1">${timeStr} 已領</span>` : ''}
                     </div>
@@ -865,13 +875,9 @@ const App = {
         if (this.currentActivityWinners.length === 0) { container.innerHTML = '<p class="text-center text-slate-400 py-6 text-sm">請選取得獎者。</p>'; return; }
         container.innerHTML = this.currentActivityWinners.map((w, idx) => {
             const mem = this.members.find(m => m.id === w.memberId);
-            
-            const name = w.isRetired ? w.retiredName : (mem?.gameName || '未知 ID');
-            const retiredLabel = w.isRetired ? ` (已退會)` : '';
-
             return `
                 <div class="flex justify-between items-center bg-yellow-50 p-2 rounded border border-yellow-100">
-                    <span class="text-sm font-bold text-slate-700">${name}${retiredLabel}</span>
+                    <span class="text-sm font-bold text-slate-700">${mem ? mem.gameName : 'Unknown'}</span>
                     <button onclick="app.removeWinner(${idx})" class="text-red-400 hover:text-red-600"><i class="fas fa-times"></i></button>
                 </div>`;
         }).join('');
