@@ -1,12 +1,18 @@
-// app.js - Final Version (Comprehensive Audit Logs)
+// app.js - Final Fix (Variable Conflict Resolved)
 
+// --- 1. 確保配置已載入 ---
 if (typeof window.AppConfig === 'undefined') {
     console.error("Configuration (config.js) not loaded.");
     document.body.innerHTML = '<div style="padding: 50px; text-align: center; color: red;">錯誤：config.js 未載入。</div>';
 }
 
+// 取得全域設定
 const Cfg = window.AppConfig || {};
-const { FIREBASE_CONFIG, COLLECTION_NAMES, SEED_DATA, SEED_GROUPS, SEED_ACTIVITIES, JOB_STRUCTURE, JOB_STYLES } = Cfg;
+
+// [修正] 這裡移除了 FIREBASE_CONFIG 的解構宣告，避免與 config.js 的全域變數衝突
+const { COLLECTION_NAMES, SEED_DATA, SEED_GROUPS, SEED_ACTIVITIES, JOB_STRUCTURE, JOB_STYLES } = Cfg;
+
+// --- 2. 應用程式核心邏輯 ---
 
 const App = {
     db: null, auth: null,
@@ -30,11 +36,12 @@ const App = {
             this.switchTab('home'); 
         } catch (e) {
             console.error("App Init Error:", e);
+            alert("應用程式初始化失敗，請檢查 F12 Console。");
         }
     },
 
     normalizeMemberData: function(m) {
-        const seedIndex = Cfg.SEED_DATA.findIndex(seed => seed.id === m.id);
+        const seedIndex = SEED_DATA.findIndex(seed => seed.id === m.id);
         if (seedIndex !== -1) return { ...m, createdAt: this.BASE_TIME + (seedIndex * 1000) };
         return { ...m, createdAt: m.createdAt || Date.now() };
     },
@@ -50,9 +57,9 @@ const App = {
         const storedHistory = localStorage.getItem('row_mod_history');
         const storedThemes = localStorage.getItem('row_local_themes');
         
-        this.members = storedMem ? JSON.parse(storedMem).map(m => this.normalizeMemberData(m)) : Cfg.SEED_DATA.map(m => this.normalizeMemberData(m));
-        this.groups = storedGrp ? JSON.parse(storedGrp) : Cfg.SEED_GROUPS;
-        this.activities = storedAct ? JSON.parse(storedAct) : (Cfg.SEED_ACTIVITIES || []);
+        this.members = storedMem ? JSON.parse(storedMem).map(m => this.normalizeMemberData(m)) : SEED_DATA.map(m => this.normalizeMemberData(m));
+        this.groups = storedGrp ? JSON.parse(storedGrp) : SEED_GROUPS;
+        this.activities = storedAct ? JSON.parse(storedAct) : (SEED_ACTIVITIES || []);
         this.leaves = storedLeaves ? JSON.parse(storedLeaves) : [];
         this.history = storedHistory ? JSON.parse(storedHistory) : [];
         if (storedThemes) this.raidThemes = JSON.parse(storedThemes);
@@ -64,7 +71,12 @@ const App = {
     initFirebase: function() {
         let config = null;
         const storedConfig = localStorage.getItem('row_firebase_config');
-        try { if (storedConfig) config = JSON.parse(storedConfig); else if (Cfg.FIREBASE_CONFIG && Cfg.FIREBASE_CONFIG.apiKey) config = Cfg.FIREBASE_CONFIG; } catch (e) {}
+        try { 
+            if (storedConfig) config = JSON.parse(storedConfig); 
+            // [修正] 直接從 Cfg 物件讀取，不宣告重複變數
+            else if (Cfg.FIREBASE_CONFIG && Cfg.FIREBASE_CONFIG.apiKey) config = Cfg.FIREBASE_CONFIG; 
+        } catch (e) {}
+
         if (config && config.apiKey) {
             try {
                 if (!firebase.apps.length) firebase.initializeApp(config);
@@ -79,8 +91,6 @@ const App = {
     syncWithFirebase: function() {
         if (!this.db || this.mode !== 'firebase') return;
         
-        const { COLLECTION_NAMES } = Cfg;
-
         this.db.collection(COLLECTION_NAMES.MEMBERS).onSnapshot(snap => { 
             const rawArr = []; snap.forEach(d => rawArr.push({ id: d.id, ...d.data() })); 
             this.members = this.sortMembers(rawArr.map(m => this.normalizeMemberData(m))); 
@@ -312,7 +322,7 @@ const App = {
         if (!isPre && !s) { alert("請選擇主題"); return; }
 
         let success = false;
-        
+
         // 取得成員名稱供 Log 使用
         const memName = this.members.find(m => m.id === mid)?.gameName || mid;
 
@@ -576,7 +586,6 @@ const App = {
         else if (action === 'ready_toggle') { if (m.status === 'leave') return; m.status = (m.status === 'ready') ? 'pending' : 'ready'; }
         group.members[index] = m; 
         this.saveGroupUpdate(group);
-        // Log status change
         this.logChange('狀態更新', `${this.members.find(u=>u.id===memberId)?.gameName} -> ${m.status}`, memberId);
     },
     updateGvgSub: function(groupId, memberId, subId) {
@@ -625,7 +634,9 @@ const App = {
         const currentType = document.getElementById('squadType').value;
 
         let availableMembers = [...this.members];
+        
         const preLeaveMembers = this.leaves.filter(l => l.date === targetDate).map(l => l.memberId);
+
         let busyMembers = [];
         if (currentType === 'gvg' && targetDate) {
             this.groups.forEach(g => {
@@ -633,7 +644,9 @@ const App = {
                     g.members.forEach(m => {
                         const mid = typeof m === 'string' ? m : m.id;
                         busyMembers.push(mid);
-                        if (typeof m === 'object' && m.subId) { busyMembers.push(m.subId); }
+                        if (typeof m === 'object' && m.subId) {
+                            busyMembers.push(m.subId);
+                        }
                     });
                 }
             });
@@ -646,15 +659,27 @@ const App = {
         document.getElementById('squadMemberSelect').innerHTML = filtered.map(m => { 
             const checked = isSelected(m.id); 
             const style = Cfg.JOB_STYLES.find(s => s.key.some(k => (m.mainClass||'').includes(k))) || { class: 'bg-job-default', icon: 'fa-user' }; 
+            
             const isLeave = preLeaveMembers.includes(m.id);
             const isBusy = busyMembers.includes(m.id);
             const isUnavailable = isLeave || isBusy;
+
             const disabledClass = isUnavailable ? 'opacity-50 cursor-not-allowed bg-slate-100' : 'hover:bg-slate-50 bg-white cursor-pointer';
             const clickAction = isUnavailable ? '' : `onchange="app.toggleSquadMember('${m.id}')"`;
+            
             let nameSuffix = '';
             if (isLeave) nameSuffix = ' <span class="text-red-500 font-bold text-[10px]">(請假)</span>';
             else if (isBusy) nameSuffix = ' <span class="text-blue-500 font-bold text-[10px]">(他隊/替補)</span>';
-            return `<label class="flex items-center space-x-2 p-2 rounded border border-blue-100 transition select-none ${checked ? 'bg-blue-50 border-blue-300' : disabledClass}"><input type="checkbox" value="${m.id}" class="rounded text-blue-500" ${checked?'checked':''} ${isUnavailable?'disabled':''} ${clickAction}><div class="w-6 h-6 rounded-full flex items-center justify-center text-xs ${style.class.replace('bg-', 'text-')} bg-opacity-20"><i class="fas ${style.icon}"></i></div><div class="min-w-0 flex-grow"><div class="text-xs font-bold text-slate-700 truncate">${m.gameName}${nameSuffix}</div><div class="text-[10px] text-slate-400">${m.mainClass.split('(')[0]} <span class="${m.role.includes('輸出')?'text-red-400':m.role.includes('坦')?'text-blue-400':'text-green-400'}">${m.role}</span></div></div></label>`; 
+
+            return `
+            <label class="flex items-center space-x-2 p-2 rounded border border-blue-100 transition select-none ${checked ? 'bg-blue-50 border-blue-300' : disabledClass}">
+                <input type="checkbox" value="${m.id}" class="rounded text-blue-500" ${checked?'checked':''} ${isUnavailable?'disabled':''} ${clickAction}>
+                <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs ${style.class.replace('bg-', 'text-')} bg-opacity-20"><i class="fas ${style.icon}"></i></div>
+                <div class="min-w-0 flex-grow">
+                    <div class="text-xs font-bold text-slate-700 truncate">${m.gameName}${nameSuffix}</div>
+                    <div class="text-[10px] text-slate-400">${m.mainClass.split('(')[0]} <span class="${m.role.includes('輸出')?'text-red-400':m.role.includes('坦')?'text-blue-400':'text-green-400'}">${m.role}</span></div>
+                </div>
+            </label>`; 
         }).join('');
         this.updateLeaderOptions();
     },
