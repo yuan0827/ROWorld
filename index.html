@@ -18,58 +18,48 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { ro: { primary: '#3b82f6', bg: '#eff6ff' } },
+                    colors: { 
+                        ro: { primary: '#3b82f6', bg: '#eff6ff' }
+                    },
                     fontFamily: {
                         'cute': ['"ZCOOL KuaiLe"', 'cursive'],
-                        'sans': ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
-                        'varela': ['"Varela Round"', 'sans-serif']
+                        'sans': ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif']
                     },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                    }
                 }
             }
-        }
+        };
     </script>
-    <style>
-        .bg-job-knight.bg-opacity-20 { background-color: rgba(59, 130, 246, 0.2); }
-        .bg-job-crusader.bg-opacity-20 { background-color: rgba(16, 185, 129, 0.2); }
-        .bg-job-blacksmith.bg-opacity-20 { background-color: rgba(245, 158, 11, 0.2); }
-        .bg-job-hunter.bg-opacity-20 { background-color: rgba(20, 184, 166, 0.2); }
-        .bg-job-assassin.bg-opacity-20 { background-color: rgba(139, 92, 246, 0.2); }
-        .bg-job-mage.bg-opacity-20 { background-color: rgba(239, 68, 68, 0.2); }
-        .bg-job-sage.bg-opacity-20 { background-color: rgba(244, 114, 182, 0.2); }
-        .bg-job-priest.bg-opacity-20 { background-color: rgba(249, 115, 22, 0.2); }
-        .bg-job-bard.bg-opacity-20 { background-color: rgba(100, 116, 139, 0.2); }
-        .bg-job-rogue.bg-opacity-20 { background-color: rgba(236, 72, 153, 0.2); }
-        .bg-job-alchemist.bg-opacity-20 { background-color: rgba(163, 230, 53, 0.2); }
-        .bg-job-monk.bg-opacity-20 { background-color: rgba(217, 70, 239, 0.2); }
-        .bg-job-gunslinger.bg-opacity-20 { background-color: rgba(6, 182, 212, 0.2); }
-        .bg-job-dancer.bg-opacity-20 { background-color: rgba(244, 63, 94, 0.2); }
-        .bg-job-default.bg-opacity-20 { background-color: rgba(209, 213, 219, 0.2); }
-    </style>
 </head>
-<body class="bg-ro-bg min-h-screen flex flex-col font-sans">
+<body class="bg-ro-bg min-h-screen pt-4 pb-20 relative font-sans text-slate-600 selection:bg-blue-100">
     
-    <!-- Header -->
-    <header class="bg-white/90 backdrop-blur-md border-b border-white/40 sticky top-0 z-50 shadow-lg">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <h1 class="text-2xl font-black text-slate-800 tracking-wider font-varela">
-                <span class="title-effect">公會名冊</span>
-            </h1>
-            <div class="flex items-center space-x-3">
-                <button onclick="app.showHistoryModal()" class="text-slate-500 hover:text-slate-800 p-2 rounded-full transition"><i class="fas fa-history text-lg"></i></button>
-                <button onclick="app.openLoginModal()" class="text-slate-500 hover:text-slate-800 p-2 rounded-full transition" id="adminButton"><i class="fas fa-user-lock text-lg"></i></button>
-            </div>
-        </div>
-    </header>
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none bg-gradient-to-b from-blue-50 to-white">
+        <div class="absolute top-0 left-0 w-full h-full opacity-40" style="background-image: radial-gradient(#bae6fd 2px, transparent 2px); background-size: 30px 30px;"></div>
+    </div>
 
-    <!-- Navigation Pills -->
+    <nav class="bg-white/80 backdrop-blur-lg border-b border-white/60 sticky top-0 z-50 px-4 py-3 flex justify-between items-center shadow-sm safe-area-top">
+        <div class="flex items-center space-x-3 cursor-pointer group" onclick="app.switchTab('home')">
+            <div class="w-9 h-9 bg-slate-800 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-md group-active:scale-95 transition font-cute border-2 border-slate-700">Zzz</div>
+            <div><h1 class="text-lg font-black text-slate-700 leading-tight tracking-tight font-cute">RO:W</h1></div>
+        </div>
+        <div class="flex items-center space-x-2">
+            <button onclick="app.openLoginModal()" id="adminToggleBtn" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-slate-800 transition rounded-xl hover:bg-slate-100"><i class="fas fa-user-shield text-lg"></i></button>
+            <div id="adminControls" class="flex items-center space-x-2 hidden">
+                <button onclick="app.showHistoryModal()" class="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-blue-600 transition bg-white rounded-xl shadow-sm"><i class="fas fa-history"></i></button>
+                <button onclick="app.showModal('configModal')" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-blue-500 transition rounded-xl"><i class="fas fa-cog"></i></button>
+            </div>
+            <button onclick="app.handleMainAction()" class="bg-slate-800 text-white shadow-lg w-10 h-10 rounded-xl font-bold transition flex items-center justify-center text-sm transform active:scale-95 hover:bg-slate-900 border-2 border-slate-900"><i class="fas fa-plus"></i></button>
+        </div>
+    </nav>
+
     <div class="bg-white/60 backdrop-blur-md border-b border-white/40 sticky top-[64px] z-40 shadow-sm" id="nav-container">
         <div class="container mx-auto px-4 py-2 flex space-x-2 overflow-x-auto scroll-hide">
             <button onclick="app.switchTab('home')" id="tab-home" class="nav-pill"><i class="fas fa-home mr-1"></i> 首頁</button>
             <button onclick="app.switchTab('members')" id="tab-members" class="nav-pill"><i class="fas fa-users mr-1"></i> 名冊</button>
-            <!-- 改名：團戰 -->
-            <button onclick="app.switchTab('gvg')" id="tab-gvg" class="nav-pill"><i class="fas fa-crosshairs mr-1"></i> 團戰</button>
+            <button onclick="app.switchTab('wars')" id="tab-wars" class="nav-pill"><i class="fas fa-fist-raised mr-1"></i> 團體戰</button>
             <button onclick="app.switchTab('groups')" id="tab-groups" class="nav-pill"><i class="fas fa-campground mr-1"></i> 固定團</button>
-            <button onclick="app.switchTab('leave')" id="tab-leave" class="nav-pill"><i class="fas fa-file-signature mr-1"></i> 請假</button>
             <button onclick="app.switchTab('activity')" id="tab-activity" class="nav-pill"><i class="fas fa-trophy mr-1"></i> 活動</button>
         </div>
     </div>
@@ -77,11 +67,71 @@
     <main class="flex-grow container mx-auto p-4 md:p-6 space-y-6 max-w-5xl safe-area-bottom">
 
         <div id="view-home" class="animate-fade-in">
+            
+            <div class="text-center py-10 mb-2 relative">
+                
+                <div class="relative mx-auto w-full max-w-[320px] h-[180px] drop-shadow-2xl hover:scale-[1.02] transition duration-500 ease-out cursor-pointer">
+                    <svg viewBox="0 0 320 180" class="w-full h-full overflow-visible">
+                        <defs>
+                            <linearGradient id="textGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#FFFFFF" />
+                                <stop offset="100%" stop-color="#E2E8F0" />
+                            </linearGradient>
+                            <filter id="hardShadow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feFlood flood-color="#1E293B" flood-opacity="0.2"/>
+                                <feComposite operator="in" in2="SourceGraphic"/>
+                                <feOffset dx="4" dy="6" result="shadow"/>
+                                <feComposite in2="shadow" operator="over" in="SourceGraphic"/>
+                            </filter>
+                        </defs>
+
+                        <g filter="url(#hardShadow)">
+                            <text x="160" y="140" text-anchor="middle" font-family="'ZCOOL KuaiLe', cursive" font-size="110" 
+                                  stroke="#1E293B" stroke-width="16" stroke-linejoin="round" fill="#1E293B">躺平</text>
+                            
+                            <text x="160" y="140" text-anchor="middle" font-family="'ZCOOL KuaiLe', cursive" font-size="110" 
+                                  fill="url(#textGrad)" stroke="#1E293B" stroke-width="0">躺平</text>
+                        </g>
+
+                        <g transform="translate(190, 35) rotate(10)">
+                            <ellipse cx="0" cy="20" rx="35" ry="25" fill="#FFF" stroke="#1E293B" stroke-width="4"/>
+                            
+                            <path d="M -20 5 Q -35 -20, -10 -30 Q 5 -20, -10 5" fill="#FFF" stroke="#1E293B" stroke-width="4" stroke-linejoin="round"/>
+                            <path d="M -18 -5 Q -25 -15, -12 -20" fill="none" stroke="#FDA4AF" stroke-width="3" stroke-linecap="round"/>
+
+                            <path d="M 10 5 Q 35 -20, 25 -35 Q 0 -30, 5 5" fill="#FFF" stroke="#1E293B" stroke-width="4" stroke-linejoin="round"/>
+                            
+                            <g transform="translate(0, 20)">
+                                <path d="M -15 0 L -5 0" stroke="#1E293B" stroke-width="3" stroke-linecap="round"/>
+                                <path d="M 5 0 L 15 0" stroke="#1E293B" stroke-width="3" stroke-linecap="round"/>
+                                <circle cx="0" cy="5" r="2" fill="#FDA4AF"/>
+                            </g>
+
+                            <g>
+                                <text x="30" y="-20" font-family="sans-serif" font-weight="900" font-size="20" fill="#3B82F6" stroke="#FFF" stroke-width="3" paint-order="stroke">Z
+                                    <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="0s"/>
+                                    <animate attributeName="y" values="-20;-40" dur="2s" repeatCount="indefinite" begin="0s"/>
+                                    <animateTransform attributeName="transform" type="translate" values="0 0; 5 -5" dur="2s" repeatCount="indefinite"/>
+                                </text>
+                                <text x="45" y="-35" font-family="sans-serif" font-weight="900" font-size="14" fill="#3B82F6" stroke="#FFF" stroke-width="3" paint-order="stroke">z
+                                    <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+                                    <animate attributeName="y" values="-35;-50" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+                                </text>
+                            </g>
+                        </g>
+
+                        <rect x="90" y="155" width="140" height="24" rx="12" fill="#3B82F6" stroke="#1E293B" stroke-width="3"/>
+                        <text x="160" y="172" text-anchor="middle" font-family="sans-serif" font-weight="900" font-size="12" fill="#FFF" letter-spacing="1">GUILD MEMBER</text>
+                    </svg>
+                </div>
+            </div>
+            
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
                 <div onclick="app.switchTab('members')" class="menu-card group border-l-4 border-l-blue-500">
                     <div class="flex justify-between items-center">
                         <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl group-hover:scale-110 transition duration-300 shadow-sm"><i class="fas fa-users"></i></div>
+                            <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl group-hover:scale-110 transition duration-300 shadow-sm"><i class="fas fa-book-open"></i></div>
                             <div>
                                 <h3 class="text-lg font-black text-slate-700">成員名冊</h3>
                                 <p class="text-xs text-slate-400 font-bold tracking-wider">MEMBER LIST</p>
@@ -91,30 +141,16 @@
                     </div>
                 </div>
 
-                <!-- 改名：團戰點名 -->
-                <div onclick="app.switchTab('gvg')" class="menu-card group border-l-4 border-l-red-500">
+                <div onclick="app.switchTab('wars')" class="menu-card group border-l-4 border-l-red-500">
                     <div class="flex justify-between items-center">
                         <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center text-xl group-hover:scale-110 transition duration-300 shadow-sm"><i class="fas fa-crosshairs"></i></div>
+                            <div class="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center text-xl group-hover:scale-110 transition duration-300 shadow-sm"><i class="fas fa-fist-raised"></i></div>
                             <div>
-                                <h3 class="text-lg font-black text-slate-700">團戰點名</h3>
-                                <p class="text-xs text-slate-400 font-bold tracking-wider">TEAM BATTLE</p>
+                                <h3 class="text-lg font-black text-slate-700">團體戰</h3>
+                                <p class="text-xs text-slate-400 font-bold tracking-wider">GROUP WARS / GVG</p>
                             </div>
                         </div>
                         <i class="fas fa-chevron-right text-slate-300 group-hover:text-red-500 transition"></i>
-                    </div>
-                </div>
-
-                <div onclick="app.switchTab('leave')" class="menu-card group border-l-4 border-l-purple-500">
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl group-hover:scale-110 transition duration-300 shadow-sm"><i class="fas fa-file-signature"></i></div>
-                            <div>
-                                <h3 class="text-lg font-black text-slate-700">請假管理</h3>
-                                <p class="text-xs text-slate-400 font-bold tracking-wider">LEAVE REQUESTS</p>
-                            </div>
-                        </div>
-                        <i class="fas fa-chevron-right text-slate-300 group-hover:text-purple-500 transition"></i>
                     </div>
                 </div>
 
@@ -124,7 +160,7 @@
                             <div class="w-12 h-12 rounded-2xl bg-green-50 text-green-600 flex items-center justify-center text-xl group-hover:scale-110 transition duration-300 shadow-sm"><i class="fas fa-campground"></i></div>
                             <div>
                                 <h3 class="text-lg font-black text-slate-700">固定團</h3>
-                                <p class="text-xs text-slate-400 font-bold tracking-wider">FIXED SQUADS</p>
+                                <p class="text-xs text-slate-400 font-bold tracking-wider">DUNGEONS</p>
                             </div>
                         </div>
                         <i class="fas fa-chevron-right text-slate-300 group-hover:text-green-500 transition"></i>
@@ -136,8 +172,8 @@
                         <div class="flex items-center gap-4">
                             <div class="w-12 h-12 rounded-2xl bg-yellow-50 text-yellow-600 flex items-center justify-center text-xl group-hover:scale-110 transition duration-300 shadow-sm"><i class="fas fa-trophy"></i></div>
                             <div>
-                                <h3 class="text-lg font-black text-slate-700">活動紀錄</h3>
-                                <p class="text-xs text-slate-400 font-bold tracking-wider">ACTIVITY LOG</p>
+                                <h3 class="text-lg font-black text-slate-700">活動獎勵</h3>
+                                <p class="text-xs text-slate-400 font-bold tracking-wider">REWARDS</p>
                             </div>
                         </div>
                         <i class="fas fa-chevron-right text-slate-300 group-hover:text-yellow-500 transition"></i>
@@ -146,277 +182,252 @@
             </div>
         </div>
         
-        <div id="view-members" class="hidden">
+        <div id="view-members" class="animate-fade-in hidden">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-slate-700 flex items-center"><i class="fas fa-users-viewfinder mr-2 text-blue-500"></i>成員名單</h2>
-                <div class="flex space-x-2">
-                    <button onclick="app.handleMainAction()" class="bg-blue-600 hover:bg-blue-700 text-white shadow-lg px-3 py-2 rounded-xl font-bold transition text-sm active:scale-95 border-2 border-blue-800"><i class="fas fa-user-plus mr-1"></i> 新增成員</button>
-                    <button onclick="app.exportCSV()" class="bg-gray-200 hover:bg-gray-300 text-slate-700 shadow-lg px-3 py-2 rounded-xl font-bold transition text-sm active:scale-95"><i class="fas fa-download mr-1"></i> 匯出</button>
-                </div>
+                <h2 class="text-xl font-bold text-slate-700 flex items-center"><i class="fas fa-users mr-2 text-blue-500"></i>成員名冊</h2>
+                <button onclick="app.handleMainAction()" class="bg-slate-800 hover:bg-slate-900 text-white shadow-lg px-3 py-2 rounded-xl font-bold transition text-sm active:scale-95 border-2 border-slate-900"><i class="fas fa-user-plus mr-1"></i> 新增</button>
             </div>
             
-            <div class="bg-white rounded-2xl p-3 mb-4 shadow-sm border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div class="relative w-full md:col-span-2">
+            <div class="bg-white rounded-2xl p-3 mb-4 shadow-sm border border-slate-200 flex flex-col gap-3">
+                <div class="relative w-full">
                     <i class="fas fa-search absolute left-3 top-3 text-slate-400"></i>
-                    <input type="text" id="memberSearchInput" oninput="app.renderMembers()" placeholder="搜尋成員名稱/職業..." class="w-full bg-slate-50 border-0 text-slate-800 rounded-xl pl-10 pr-4 py-2.5 outline-none font-bold focus:ring-2 focus:ring-blue-200 transition placeholder-slate-400">
+                    <input type="text" id="searchInput" oninput="app.renderMembers()" placeholder="搜尋名字、職業..." class="w-full bg-slate-50 border-0 text-slate-800 rounded-xl pl-10 pr-4 py-2.5 outline-none font-bold focus:ring-2 focus:ring-blue-200 transition placeholder-slate-400">
                 </div>
-                <select id="jobFilterSelect" onchange="app.setJobFilter(this.value)" class="w-full bg-slate-50 border-0 text-slate-800 rounded-xl p-3 outline-none font-bold focus:ring-2 focus:ring-blue-200 transition"></select>
+                <div class="relative w-full">
+                    <select id="filterJob" onchange="app.setJobFilter(this.value)" class="w-full bg-slate-50 border-0 rounded-xl p-2.5 outline-none font-bold text-slate-700 focus:ring-2 focus:ring-blue-200 transition">
+                        <option value="all">所有職業</option>
+                    </select>
+                    <i class="fas fa-chevron-down absolute right-3 top-3.5 text-slate-400 pointer-events-none"></i>
+                </div>
+                <div class="flex gap-2 overflow-x-auto pb-1 scroll-hide">
+                    <button onclick="app.setFilter('all')" class="px-4 py-1.5 rounded-full text-sm font-bold bg-slate-800 text-white shadow-md filter-btn transition active:scale-95">全部</button>
+                    <button onclick="app.setFilter('輸出')" class="px-4 py-1.5 rounded-full text-sm font-bold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 filter-btn transition active:scale-95">輸出</button>
+                    <button onclick="app.setFilter('輔助')" class="px-4 py-1.5 rounded-full text-sm font-bold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 filter-btn transition active:scale-95">輔助</button>
+                    <button onclick="app.setFilter('坦')" class="px-4 py-1.5 rounded-full text-sm font-bold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 filter-btn transition active:scale-95">坦克</button>
+                    <button onclick="app.setFilter('待定')" class="px-4 py-1.5 rounded-full text-sm font-bold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 filter-btn transition active:scale-95">待定</button>
+                </div>
             </div>
 
-            <div id="memberList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
-            <div id="noMembersMsg" class="hidden text-center py-20 text-slate-400">
-                <div class="text-6xl mb-4 text-slate-200"><i class="fas fa-ghost"></i></div>
-                <p class="text-slate-400 font-bold">沒有符合條件的成員</p>
+            <div class="flex justify-between text-xs text-slate-400 mb-2 px-2 font-mono font-bold">
+                <span id="memberCount">Total: 0</span>
+                <div class="space-x-2">
+                    <span>DPS: <span id="stat-dps" class="text-red-500">0</span></span>
+                    <span>SUP: <span id="stat-sup" class="text-green-500">0</span></span>
+                    <span>TNK: <span id="stat-tank" class="text-blue-500">0</span></span>
+                </div>
+            </div>
+            <div id="memberGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+        </div>
+
+        <div id="view-wars" class="animate-fade-in hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-slate-700 flex items-center"><i class="fas fa-fist-raised mr-2 text-red-500"></i>團體戰分組</h2>
+                <button onclick="app.handleMainAction()" class="bg-slate-800 hover:bg-slate-900 text-white shadow-lg px-3 py-2 rounded-xl font-bold transition text-sm active:scale-95 border-2 border-slate-900"><i class="fas fa-plus mr-1"></i> 新增分組</button>
+            </div>
+            
+            <div class="bg-white rounded-2xl p-3 mb-4 shadow-sm border border-slate-200 flex flex-col gap-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="relative w-full">
+                        <select id="warTopicSelect" onchange="app.setWarTopicFilter(this.value)" class="w-full bg-slate-50 border-0 rounded-xl p-2.5 outline-none font-bold text-slate-700 focus:ring-2 focus:ring-red-200 transition"></select>
+                        <i class="fas fa-chevron-down absolute right-3 top-3.5 text-slate-400 pointer-events-none"></i>
+                    </div>
+                    <div class="relative w-full">
+                        <select id="warDateSelect" onchange="app.setWarDateFilter(this.value)" class="w-full bg-slate-50 border-0 rounded-xl p-2.5 outline-none font-bold text-slate-700 focus:ring-2 focus:ring-red-200 transition"></select>
+                        <i class="fas fa-chevron-down absolute right-3 top-3.5 text-slate-400 pointer-events-none"></i>
+                    </div>
+                </div>
+                <div class="relative w-full">
+                    <i class="fas fa-search absolute left-3 top-3 text-slate-400"></i>
+                    <input type="text" id="warSearchInput" oninput="app.renderWars()" placeholder="搜尋隊伍、成員..." class="w-full bg-slate-50 border-0 text-slate-800 rounded-xl pl-10 pr-4 py-2.5 outline-none font-bold focus:ring-2 focus:ring-red-200 transition placeholder-slate-400">
+                </div>
+            </div>
+
+            <div id="adminWarWarning" class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-3 rounded-xl mb-4 text-xs flex items-center hidden">
+                <i class="fas fa-lock mr-2 text-lg"></i> 
+                <div><div class="font-bold">權限受限</div><div>僅有 會長、指揮官、管理員 可編輯此頁面。</div></div>
+            </div>
+            <div id="warGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
+            <div id="noWarsMsg" class="hidden text-center py-20 text-slate-400">
+                <div class="text-6xl mb-4 text-slate-200"><i class="fas fa-box-open"></i></div><p class="text-slate-400 font-bold">目前沒有團體戰隊伍</p>
             </div>
         </div>
 
         <div id="view-groups" class="hidden">
             <div class="flex justify-between items-center mb-4">
-                <h2 id="squads-title" class="text-xl font-bold text-slate-700 flex items-center"></h2>
-                <button onclick="app.handleMainAction()" class="bg-red-600 hover:bg-red-700 text-white shadow-lg px-3 py-2 rounded-xl font-bold transition text-sm active:scale-95 border-2 border-red-800"><i class="fas fa-plus mr-1"></i> 新增隊伍</button>
-            </div>
-
-            <!-- 新增：團戰主題選擇 (只在 GVG tab 顯示) -->
-            <div id="gvgThemeSelector" class="bg-white rounded-2xl p-4 mb-4 shadow-sm border border-slate-200 hidden">
-                <div class="flex justify-between items-center mb-2">
-                    <label for="gvgThemeSelect" class="block text-xs text-slate-500 font-bold">團戰主題/場次</label>
-                    <button id="addThemeBtn" onclick="app.openThemeModal()" class="text-xs text-red-500 hover:text-red-700 font-bold hidden"><i class="fas fa-plus mr-1"></i> 新增主題</button>
+                <h2 class="text-xl font-bold text-slate-700" id="groupViewTitle">分組列表</h2>
+                <div class="flex gap-2">
+                     <div class="relative w-36"><i class="fas fa-search absolute left-3 top-2.5 text-slate-400 text-xs"></i><input type="text" id="groupSearchInput" oninput="app.renderSquads()" placeholder="搜尋..." class="w-full bg-white border border-slate-200 text-slate-800 rounded-lg pl-8 pr-3 py-2 text-xs outline-none focus:border-blue-300 transition"></div>
+                     <button onclick="app.handleMainAction()" class="bg-slate-800 hover:bg-slate-900 text-white shadow-lg px-3 py-2 rounded-xl font-bold transition text-sm active:scale-95 border-2 border-slate-900"><i class="fas fa-plus mr-1"></i> 建隊</button>
                 </div>
-                <select id="gvgThemeSelect" onchange="app.selectTheme(this.value)" class="w-full bg-slate-50 border-0 rounded-xl p-3 font-bold outline-none focus:ring-2 focus:ring-red-200 text-slate-700"></select>
             </div>
-
-            <div id="squads-list" class="space-y-4"></div>
+            <div id="adminWarning" class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-3 rounded-xl mb-4 text-xs flex items-center hidden">
+                <i class="fas fa-lock mr-2 text-lg"></i> 
+                <div><div class="font-bold">權限受限</div><div>僅有 會長、指揮官、管理員 可編輯此頁面。</div></div>
+            </div>
+            <div id="squadGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
             <div id="noSquadsMsg" class="hidden text-center py-20 text-slate-400">
-                <div class="text-6xl mb-4 text-slate-200"><i class="fas fa-layer-group"></i></div>
-                <p class="text-slate-400 font-bold">目前沒有固定團或團戰分流</p>
-            </div>
-        </div>
-
-        <div id="view-leave" class="hidden">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-slate-700 flex items-center"><i class="fas fa-file-signature mr-2 text-purple-500"></i>請假紀錄</h2>
-                <button onclick="app.handleMainAction()" class="bg-purple-600 hover:bg-purple-700 text-white shadow-lg px-3 py-2 rounded-xl font-bold transition text-sm active:scale-95 border-2 border-purple-800"><i class="fas fa-plus mr-1"></i> 新增假單</button>
-            </div>
-
-            <div class="bg-white rounded-2xl p-3 mb-4 shadow-sm border border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div class="relative w-full">
-                    <i class="fas fa-search absolute left-3 top-3 text-slate-400"></i>
-                    <input type="text" id="leaveSearchInput" oninput="app.renderLeaveRequests()" placeholder="搜尋成員..." class="w-full bg-slate-50 border-0 text-slate-800 rounded-xl pl-10 pr-4 py-2.5 outline-none font-bold focus:ring-2 focus:ring-purple-200 transition placeholder-slate-400">
-                </div>
-                <div class="relative w-full">
-                    <i class="fas fa-calendar absolute left-3 top-3 text-slate-400"></i>
-                    <input type="date" id="leaveDateFilter" onchange="app.renderLeaveRequests()" class="w-full bg-slate-50 border-0 text-slate-800 rounded-xl pl-10 pr-4 py-2.5 outline-none font-bold focus:ring-2 focus:ring-purple-200 transition placeholder-slate-400">
-                </div>
-            </div>
-
-            <div id="leaveList" class="space-y-3"></div>
-            <div id="noLeavesMsg" class="hidden text-center py-20 text-slate-400">
-                <div class="text-6xl mb-4 text-slate-200"><i class="fas fa-clipboard-check"></i></div>
-                <p class="text-slate-400 font-bold">目前沒有請假紀錄</p>
+                <div class="text-6xl mb-4 text-slate-200"><i class="fas fa-box-open"></i></div><p class="text-slate-400 font-bold">目前沒有隊伍</p>
             </div>
         </div>
 
         <div id="view-activity" class="hidden">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-slate-700 flex items-center"><i class="fas fa-trophy mr-2 text-yellow-500"></i>活動紀錄</h2>
-                <button onclick="app.handleMainAction()" class="bg-yellow-600 hover:bg-yellow-700 text-white shadow-lg px-3 py-2 rounded-xl font-bold transition text-sm active:scale-95 border-2 border-yellow-800"><i class="fas fa-plus mr-1"></i> 新增活動</button>
+                <h2 class="text-xl font-bold text-slate-700 flex items-center"><i class="fas fa-trophy mr-2 text-yellow-500"></i>活動獎勵管理</h2>
+                <button onclick="app.handleMainAction()" id="addActivityBtn" class="bg-yellow-500 hover:bg-yellow-600 text-white shadow-lg px-3 py-2 rounded-xl font-bold transition text-sm active:scale-95 hidden border-2 border-yellow-600"><i class="fas fa-plus mr-1"></i> 新增活動</button>
             </div>
-            <div id="activityList" class="space-y-4"></div>
-            <div id="noActivitiesMsg" class="hidden text-center py-20 text-slate-400">
-                <div class="text-6xl mb-4 text-slate-200"><i class="fas fa-box-open"></i></div>
-                <p class="text-slate-400 font-bold">尚未舉辦任何活動</p>
+            <div id="activityAdminWarning" class="bg-red-50 border border-red-200 text-red-800 p-3 rounded-xl mb-4 text-xs flex items-center hidden">
+                <i class="fas fa-lock mr-2 text-lg"></i> 
+                <div><div class="font-bold">權限受限</div><div>此頁面操作 (發放獎勵) 僅限 **會長** 使用。</div></div>
             </div>
-        </div>
-
-        <!-- Modals -->
-        <div id="loginModal" class="modal-overlay fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl p-6 relative flex flex-col border border-white/50">
-                <button onclick="app.closeModal('loginModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-times text-xl"></i></button>
-                <h3 class="text-xl font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100"><i class="fas fa-user-lock mr-2 text-blue-500"></i>管理員登入</h3>
-                <div id="loginForm" class="space-y-4">
-                    <input type="password" id="adminPassword" class="w-full bg-slate-50 border-0 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-200" placeholder="請輸入管理密碼">
-                    <button onclick="app.handleLogin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl p-3 shadow-lg active:scale-95 transition">登入</button>
-                </div>
-                <div id="configSection" class="mt-6 pt-4 border-t border-slate-100">
-                    <h4 class="text-sm font-bold text-slate-600 mb-2">Firestore 連線設定 (會長專用)</h4>
-                    <textarea id="firebaseConfigInput" rows="5" class="w-full bg-slate-50 border-slate-300 rounded-xl p-3 text-xs font-mono resize-none focus:ring-2 focus:ring-blue-200" placeholder="貼上 Firebase 配置 JSON" readonly></textarea>
-                    <div class="flex justify-between items-center">
-                        <button onclick="app.resetToDemo()" class="text-red-400 text-xs hover:text-red-600">重置資料</button>
-                        <button onclick="app.saveConfig()" class="px-4 py-2 bg-slate-800 text-white rounded-xl hover:bg-slate-900 transition shadow-lg">連線</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div id="historyModal" class="modal-overlay fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto border border-white/50">
-                <button onclick="app.closeModal('historyModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-times text-xl"></i></button>
-                <h3 class="text-xl font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100"><i class="fas fa-history mr-2 text-yellow-600"></i>修改紀錄 (保留30天)</h3>
-                <div id="historyList" class="space-y-3"></div>
-            </div>
-        </div>
-
-        <div id="squadModal" class="modal-overlay fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl p-6 relative flex flex-col max-h-[90vh] border border-white/50">
-                <button onclick="app.closeModal('squadModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-times text-xl"></i></button>
-                <h3 id="squadModalTitle" class="text-xl font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100"><i class="fas fa-layer-group mr-2 text-red-500"></i>新增分流/隊伍</h3>
-                <div class="flex-grow overflow-y-auto space-y-4 custom-scrollbar">
-                    <input type="hidden" id="squadIdInput">
-                    <input type="hidden" id="squadTypeInput">
-                    <div>
-                        <label class="block text-xs text-slate-500 mb-1 font-bold">隊伍名稱</label>
-                        <input type="text" id="squadNameInput" class="w-full bg-slate-50 border-0 rounded-xl p-3 font-bold outline-none focus:ring-2 focus:ring-red-200 text-slate-700" placeholder="例如：團戰一分流、固定副本團">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-500 mb-1 font-bold">備註</label>
-                        <textarea id="squadNoteInput" rows="2" class="w-full bg-slate-50 border-0 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-200" placeholder="備註資訊，例如：只打塔、坦補法..."></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-500 mb-2 font-bold flex justify-between">
-                            <span>選擇成員 (已選 <span id="squadMemberCount">0</span> 人)</span>
-                            <div class="flex space-x-2">
-                                <select id="squadMemberRoleFilter" onchange="app.renderSquadMemberSelect()" class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 text-xs">
-                                    <option value="all">所有職位</option>
-                                    <option value="tank">坦克</option>
-                                    <option value="physical_dps">物理輸出</option>
-                                    <option value="magical_dps">魔法輸出</option>
-                                    <option value="support">輔助</option>
-                                    <option value="utility">功能</option>
-                                    <option value="other">其他</option>
-                                </select>
-                                <input type="text" id="squadMemberSearch" oninput="app.renderSquadMemberSelect()" placeholder="搜尋..." class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 text-xs w-24">
-                            </div>
-                        </label>
-                        <div id="squadMemberSelectGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-[300px] overflow-y-auto p-1 border border-slate-200 rounded-xl"></div>
-                    </div>
-                </div>
-                <div class="flex justify-end items-center mt-6 pt-4 border-t border-slate-100 shrink-0 gap-3">
-                     <button type="button" onclick="app.deleteSquad()" id="deleteSquadBtn" class="px-4 py-2 text-red-500 hover:text-red-700 font-bold hidden">刪除</button>
-                     <button type="button" onclick="app.closeModal('squadModal')" class="px-4 py-2 text-slate-500 hover:text-slate-800 font-bold">取消</button>
-                     <button type="button" onclick="app.saveSquad()" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg active:scale-95 transition border-b-4 border-red-800">儲存隊伍</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="leaveModal" class="modal-overlay fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl p-6 relative flex flex-col max-h-[90vh] border border-white/50">
-                <button onclick="app.closeModal('leaveModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-times text-xl"></i></button>
-                <h3 class="text-xl font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100"><i class="fas fa-pen-nib mr-2 text-purple-500"></i>新增請假單</h3>
-                <div class="flex-grow overflow-y-auto space-y-4 custom-scrollbar">
-                    
-                    <!-- 新增：請假主題選擇 -->
-                    <div>
-                        <label class="block text-xs text-slate-500 mb-1 font-bold">請假主題/場次</label>
-                        <select id="leaveThemeSelect" class="w-full bg-slate-50 border-0 rounded-xl p-3 font-bold outline-none focus:ring-2 focus:ring-purple-200 text-slate-700"></select>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs text-slate-500 mb-1 font-bold">請假日期</label>
-                        <input type="date" id="leaveDateInput" class="w-full bg-slate-50 border-0 rounded-xl p-3 font-bold outline-none focus:ring-2 focus:ring-purple-200 text-slate-700">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs text-slate-500 mb-2 font-bold flex justify-between">
-                            <span>選擇成員</span>
-                            <input type="text" id="leaveMemberSearch" oninput="app.renderLeaveMemberSelect()" placeholder="搜尋..." class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 text-xs w-24">
-                        </label>
-                        <div id="leaveMemberSelectGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-[200px] overflow-y-auto p-1"></div>
-                        <input type="hidden" id="selectedLeaveMemberId">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs text-slate-500 mb-1 font-bold">詳細原因</label>
-                        <textarea id="leaveReason" rows="2" class="w-full bg-slate-50 border-0 rounded-xl p-3 outline-none focus:ring-2 focus:ring-purple-200" placeholder="例如：加班、出國..."></textarea>
-                    </div>
-                </div>
-                <div class="flex justify-end items-center mt-6 pt-4 border-t border-slate-100 shrink-0 gap-3">
-                     <button type="button" onclick="app.closeModal('leaveModal')" class="px-4 py-2 text-slate-500 hover:text-slate-800 font-bold">取消</button>
-                     <button type="button" onclick="app.saveLeaveRequest()" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow-lg active:scale-95 transition border-b-4 border-purple-800">送出假單</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 新增：主題管理 Modal (會長專用) -->
-        <div id="themeModal" class="modal-overlay fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl p-6 relative flex flex-col max-h-[90vh] border border-white/50">
-                <button onclick="app.closeModal('themeModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-times text-xl"></i></button>
-                <h3 class="text-xl font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100"><i class="fas fa-plus mr-2 text-red-500"></i>新增團戰/請假主題</h3>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs text-slate-500 mb-1 font-bold">主題名稱 (例如：週日城戰)</label>
-                        <input type="text" id="themeNameInput" class="w-full bg-slate-50 border-0 rounded-xl p-3 font-bold outline-none focus:ring-2 focus:ring-red-200 text-slate-700" placeholder="輸入主題名稱">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-500 mb-1 font-bold">圖標 (Font Awesome Class)</label>
-                        <input type="text" id="themeIconInput" class="w-full bg-slate-50 border-0 rounded-xl p-3 font-bold outline-none focus:ring-2 focus:ring-red-200 text-slate-700" value="fas fa-star" placeholder="例如: fas fa-star">
-                        <p class="text-xs text-slate-400 mt-1">請輸入 Font Awesome Class 名稱。</p>
-                    </div>
-                </div>
-                <div class="flex justify-end items-center mt-6 pt-4 border-t border-slate-100 shrink-0 gap-3">
-                    <button type="button" onclick="app.closeModal('themeModal')" class="px-4 py-2 text-slate-500 hover:text-slate-800 font-bold">取消</button>
-                    <button type="button" onclick="app.saveCustomTheme()" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg active:scale-95 transition border-b-4 border-red-800">儲存主題</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="activityModal" class="modal-overlay fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl p-6 relative flex flex-col max-h-[90vh] border border-white/50">
-                <button onclick="app.closeModal('activityModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-times text-xl"></i></button>
-                <h3 id="activityModalTitle" class="text-xl font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100"><i class="fas fa-trophy mr-2 text-yellow-500"></i>新增活動</h3>
-                <div class="flex-grow overflow-y-auto space-y-4 custom-scrollbar">
-                    <input type="hidden" id="activityIdInput">
-                    <div>
-                        <label class="block text-xs text-slate-500 mb-1 font-bold">活動名稱</label>
-                        <input type="text" id="activityNameInput" class="w-full bg-slate-50 border-0 rounded-xl p-3 font-bold outline-none focus:ring-2 focus:ring-yellow-200 text-slate-700" placeholder="例如：聖誕造型大賽">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-500 mb-1 font-bold">說明/獎勵</label>
-                        <textarea id="activityNoteInput" rows="2" class="w-full bg-slate-50 border-0 rounded-xl p-3 outline-none focus:ring-2 focus:ring-yellow-200" placeholder="活動說明、獎勵內容"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-500 mb-2 font-bold flex justify-between">
-                            <span>獲獎成員 (<span id="activityWinnerCount">0</span> 人)</span>
-                            <button onclick="app.openWinnerSelectionModal()" class="text-xs text-blue-500 hover:text-blue-700 font-bold"><i class="fas fa-user-plus mr-1"></i> 選擇成員</button>
-                        </label>
-                        <div id="activityWinnersList" class="space-y-2 max-h-[150px] overflow-y-auto p-2 border border-slate-200 rounded-xl"></div>
-                    </div>
-                </div>
-                <div class="flex justify-end items-center mt-6 pt-4 border-t border-slate-100 shrink-0 gap-3">
-                     <button type="button" onclick="app.deleteActivity()" id="deleteActivityBtn" class="px-4 py-2 text-red-500 hover:text-red-700 font-bold hidden">刪除</button>
-                     <button type="button" onclick="app.closeModal('activityModal')" class="px-4 py-2 text-slate-500 hover:text-slate-800 font-bold">取消</button>
-                     <button type="button" onclick="app.saveActivity()" class="px-6 py-2 bg-yellow-600 hover:bg-yellow-700 text-white font-bold rounded-xl shadow-lg active:scale-95 transition border-b-4 border-yellow-800">儲存活動</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="winnerSelectionModal" class="modal-overlay fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl p-6 relative flex flex-col max-h-[90vh] border border-white/50">
-                <h3 class="text-xl font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100"><i class="fas fa-list-check mr-2 text-blue-500"></i>選擇獲獎成員</h3>
-                <div class="flex-grow overflow-y-auto space-y-4 custom-scrollbar">
-                    <div class="flex space-x-2 mb-3">
-                        <select id="winnerRoleFilter" onchange="app.renderActivityWinnersList()" class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 text-xs">
-                            <option value="all">所有職位</option>
-                            <option value="tank">坦克</option>
-                            <option value="physical_dps">物理輸出</option>
-                            <option value="magical_dps">魔法輸出</option>
-                            <option value="support">輔助</option>
-                            <option value="utility">功能</option>
-                            <option value="other">其他</option>
-                        </select>
-                        <input type="text" id="winnerMemberSearch" oninput="app.renderActivityWinnersList()" placeholder="搜尋成員名稱..." class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 text-xs flex-grow">
-                    </div>
-                    <div id="winnerSelectGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-[350px] overflow-y-auto p-1 border border-slate-200 rounded-xl"></div>
-                </div>
-                <div class="flex justify-end items-center mt-6 pt-4 border-t border-slate-100 shrink-0 gap-3">
-                     <button type="button" onclick="app.closeModal('winnerSelectionModal')" class="px-4 py-2 text-slate-500 hover:text-slate-800 font-bold">取消</button>
-                     <button type="button" onclick="app.applyWinnerSelection()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg active:scale-95 transition border-b-4 border-blue-800">確認選擇</button>
-                </div>
+            <div id="activityList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+             <div id="noActivitiesMsg" class="hidden text-center py-20 text-slate-400">
+                <div class="text-6xl mb-4 text-slate-200"><i class="fas fa-box-open"></i></div><p class="text-slate-400 font-bold">目前沒有活動</p>
             </div>
         </div>
 
     </main>
-    <script src="./js/config.js"></script>
-    <script src="./js/app.js"></script>
-    <script>App.init();</script>
+    
+    <div id="loginModal" class="modal-overlay fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-[70]">
+        <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-6 relative border border-white/50 transform scale-100 transition-all">
+            <button onclick="app.closeModal('loginModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-times"></i></button>
+            <div class="text-center mb-6"><div class="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 text-2xl mx-auto mb-3"><i class="fas fa-user-lock"></i></div><h3 class="text-xl font-black text-slate-800">管理員登入</h3></div>
+            <form id="loginForm" class="space-y-4" onsubmit="event.preventDefault(); app.handleLogin();">
+                <input type="text" id="loginUser" class="w-full bg-slate-50 border-0 rounded-xl p-3 font-bold outline-none focus:ring-2 focus:ring-slate-200 transition" placeholder="帳號">
+                <input type="password" id="loginPass" class="w-full bg-slate-50 border-0 rounded-xl p-3 font-bold outline-none focus:ring-2 focus:ring-slate-200 transition" placeholder="密碼">
+                <button type="submit" class="w-full py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl shadow-lg mt-2 active:scale-95 transition border-b-4 border-slate-950">確認登入</button>
+            </form>
+        </div>
+    </div>
+    
+    <div id="editModal" class="modal-overlay fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto border border-white/50">
+            <button onclick="app.closeModal('editModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-times text-xl"></i></button>
+            <h3 class="text-xl font-bold text-slate-800 mb-6 pb-3 border-b border-slate-100">成員資料</h3>
+            <form id="memberForm" class="space-y-4" onsubmit="return false;">
+                <input type="hidden" id="editId">
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-xs text-slate-500 mb-1 font-bold">遊戲 ID</label><input type="text" id="gameName" class="w-full bg-slate-50 border-0 rounded-xl p-3 font-bold outline-none focus:ring-2 focus:ring-slate-200" required></div>
+                    <div><label class="block text-xs text-slate-500 mb-1 font-bold">LINE 暱稱</label><input type="text" id="lineName" class="w-full bg-slate-50 border-0 rounded-xl p-3 outline-none focus:ring-2 focus:ring-slate-200" required></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1 font-bold">職業大類</label>
+                        <div class="relative"><select id="baseJobSelect" class="w-full bg-slate-50 border-0 rounded-xl p-3 appearance-none outline-none font-bold focus:ring-2 focus:ring-slate-200" onchange="app.updateSubJobSelect()"></select><i class="fas fa-chevron-down absolute right-3 top-4 text-slate-400 pointer-events-none"></i></div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1 font-bold">流派 (可手動)</label>
+                        <div class="flex gap-1">
+                            <div class="relative w-full" id="subJobSelectWrapper"><select id="subJobSelect" class="w-full bg-slate-50 border-0 rounded-xl p-3 appearance-none outline-none font-bold disabled:bg-slate-100 focus:ring-2 focus:ring-slate-200"></select><i class="fas fa-chevron-down absolute right-3 top-4 text-slate-400 pointer-events-none"></i></div>
+                            <input type="text" id="subJobInput" class="w-full bg-slate-50 border-0 rounded-xl p-3 outline-none hidden focus:ring-2 focus:ring-slate-200" placeholder="輸入流派">
+                            <button type="button" onclick="app.toggleJobInputMode()" id="toggleJobBtn" class="bg-slate-100 text-slate-500 px-3 rounded-xl hover:bg-slate-200 hidden"><i class="fas fa-pen"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-xs text-slate-500 mb-1 font-bold">定位</label><select id="role" class="w-full bg-slate-50 border-0 rounded-xl p-3 outline-none focus:ring-2 focus:ring-slate-200"><option value="輸出">輸出 (DPS)</option><option value="輔助">輔助 (Sup)</option><option value="坦">坦克 (Tank)</option><option value="待定">待定 (Unknown)</option></select></div>
+                    <div><label class="block text-xs text-slate-500 mb-1 font-bold flex items-center">公會職位 <i class="fas fa-lock text-slate-300 text-xs ml-2" id="rankLockIcon"></i></label><select id="rank" class="w-full bg-white border border-slate-200 rounded-lg p-2.5 outline-none disabled:bg-transparent disabled:border-none disabled:p-0 disabled:font-bold disabled:text-slate-600 disabled:mt-2"><option value="成員">成員</option><option value="會長">會長</option><option value="指揮官">指揮官</option><option value="資料管理員">資料管理員</option></select></div>
+                </div>
+                <div><label class="block text-xs text-slate-500 mb-1 font-bold">備註</label><textarea id="intro" rows="3" class="w-full bg-slate-50 border-0 rounded-xl p-3 outline-none focus:ring-2 focus:ring-slate-200"></textarea></div>
+                <div class="flex justify-between items-center mt-6 pt-4 border-t border-slate-100">
+                     <div id="deleteBtnContainer"></div>
+                     <div class="flex gap-3"><button type="button" onclick="app.closeModal('editModal')" class="px-4 py-2 text-slate-500 hover:text-slate-800 font-bold">取消</button><button type="button" onclick="app.saveMemberData()" class="px-6 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl shadow-lg active:scale-95 transition border-b-4 border-slate-950">儲存</button></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="squadModal" class="modal-overlay fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl p-6 relative flex flex-col max-h-[90vh] border border-white/50">
+            <button onclick="app.closeModal('squadModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-times text-xl"></i></button>
+            <h3 class="text-xl font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100"><i class="fas fa-users-cog mr-2 text-slate-500"></i><span id="squadModalTitle">隊伍管理</span></h3>
+            <div class="space-y-4 mb-4">
+                <input type="hidden" id="squadId"><input type="hidden" id="squadType">
+                <div class="grid grid-cols-4 gap-4" id="squadWarFields">
+                    </div>
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="col-span-2"><label class="block text-xs text-slate-500 mb-1 font-bold">隊伍名稱</label><input type="text" id="squadName" class="w-full bg-slate-50 border-0 rounded-xl p-3 font-bold outline-none focus:ring-2 focus:ring-slate-200" placeholder="例如：進攻 A 隊"></div>
+                    <div class="col-span-1"><label class="block text-xs text-slate-500 mb-1 font-bold">隊長 (僅限隊員)</label><select id="squadLeader" class="w-full bg-slate-50 border-0 rounded-xl p-3 outline-none font-bold text-sm focus:ring-2 focus:ring-slate-200"><option value="">未指定</option></select></div>
+                    <div class="col-span-1"><label class="block text-xs text-slate-500 mb-1 font-bold">備註</label><input type="text" id="squadNote" class="w-full bg-slate-50 border-0 rounded-xl p-3 outline-none focus:ring-2 focus:ring-slate-200" placeholder="守城 / 遊走"></div>
+                </div>
+            </div>
+            <div class="flex-grow overflow-hidden flex flex-col">
+                <label class="block text-xs text-slate-500 mb-2 font-bold flex justify-between items-center"><span>勾選隊員 (已選: <span id="selectedCount" class="text-blue-600 font-bold">0</span>)</span><input type="text" id="memberSearch" oninput="app.renderSquadMemberSelect()" placeholder="搜尋..." class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1 text-xs text-slate-800 w-36 appearance-none focus:border-blue-300 outline-none"></label>
+                <div id="squadMemberSelect" class="flex-grow overflow-y-auto bg-slate-50 rounded-xl p-2 grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[300px] touch-pan-y"></div>
+            </div>
+            <div class="flex justify-between items-center mt-6 pt-4 border-t border-slate-100 shrink-0">
+                 <div id="deleteSquadBtnContainer"></div>
+                 <div class="flex gap-3"><button type="button" onclick="app.closeModal('squadModal')" class="px-4 py-2 text-slate-500 hover:text-slate-800 font-bold">取消</button><button type="button" onclick="app.saveSquad()" class="px-6 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl shadow-lg active:scale-95 transition border-b-4 border-slate-950">儲存</button></div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="activityModal" class="modal-overlay fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-xl shadow-2xl p-6 relative flex flex-col max-h-[90vh] border border-white/50">
+            <button onclick="app.closeModal('activityModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-times text-xl"></i></button>
+            <h3 class="text-xl font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100"><i class="fas fa-star mr-2 text-yellow-500"></i>活動管理 - <span id="activityModalTitle">新增</span></h3>
+            <input type="hidden" id="activityId">
+            <div class="space-y-3 mb-4">
+                <div><label class="block text-xs text-slate-500 mb-1 font-bold">活動主題</label><input type="text" id="activityName" class="w-full bg-slate-50 border-0 rounded-xl p-3 font-bold outline-none focus:ring-2 focus:ring-yellow-200" placeholder="例如：MVP 爭霸戰"></div>
+                <div><label class="block text-xs text-slate-500 mb-1 font-bold">總獎勵說明 (顯示於卡片上方)</label><textarea id="activityNote" rows="2" class="w-full bg-slate-50 border-0 rounded-xl p-3 outline-none focus:ring-2 focus:ring-yellow-200" placeholder="例如：Zeny x 5000000"></textarea></div>
+            </div>
+            <div class="flex justify-between items-center mb-2 pt-2 border-t border-slate-100">
+                <h4 class="text-sm font-bold text-slate-600 flex items-center"><i class="fas fa-users mr-1"></i> 得獎者名單 (<span id="winnerCount">0</span>)</h4>
+                <button onclick="app.openWinnerSelectionModal()" class="bg-orange-50 hover:bg-orange-100 text-orange-600 text-xs font-bold py-1 px-3 rounded-lg border border-orange-200 flex items-center transition"><i class="fas fa-hand-pointer mr-1"></i> 選取得獎者</button>
+            </div>
+            <div id="winnerListContainer" class="flex-grow overflow-y-auto bg-white border border-slate-200 rounded-xl p-1 max-h-[300px] space-y-1"></div>
+            <div class="flex justify-between items-center mt-6 pt-4 border-t border-slate-100 shrink-0">
+                 <div id="deleteActivityBtnContainer"></div>
+                 <div class="flex gap-3"><button type="button" onclick="app.closeModal('activityModal')" class="px-4 py-2 text-slate-500 hover:text-slate-800 font-bold">取消</button><button type="button" onclick="app.saveActivity()" class="px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold rounded-xl shadow-lg active:scale-95 transition border-b-4 border-yellow-700">儲存活動</button></div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="winnerSelectionModal" class="modal-overlay fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl p-6 relative flex flex-col max-h-[90vh] border border-white/50">
+            <button onclick="app.closeModal('winnerSelectionModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-times text-xl"></i></button>
+            <h3 class="text-xl font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100"><i class="fas fa-dice mr-2 text-red-500"></i>選取活動得獎者</h3>
+            <div class="flex justify-between items-center mb-3">
+                <h4 class="text-sm font-bold text-slate-600">從名冊中勾選成員</h4>
+                <button onclick="app.performLuckyDraw()" class="bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold py-1 px-3 rounded-lg border border-red-200 flex items-center transition active:scale-95"><i class="fas fa-shuffle mr-1"></i> 隨機選取 1 位</button>
+            </div>
+            <input type="text" id="winnerSearchInput" oninput="app.renderWinnerMemberSelect()" placeholder="搜尋成員..." class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 w-full appearance-none mb-3 outline-none focus:border-blue-300 transition">
+            <div id="winnerMemberSelect" class="flex-grow overflow-y-auto bg-slate-50 rounded-xl p-2 grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[300px] touch-pan-y"></div>
+            <div class="flex justify-end items-center mt-6 pt-4 border-t border-slate-100 shrink-0">
+                 <button type="button" onclick="app.confirmWinnerSelection()" class="px-6 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl shadow-lg active:scale-95 transition border-b-4 border-slate-950">確認選取</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="configModal" class="modal-overlay fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 relative border border-white/50">
+            <button onclick="app.closeModal('configModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-times text-xl"></i></button>
+            <h3 class="text-xl font-bold text-slate-800 mb-4">設定</h3>
+            <div class="space-y-4">
+                 <button onclick="app.showHistoryModal()" class="w-full text-left p-4 bg-slate-50 hover:bg-slate-100 rounded-xl flex items-center transition border border-slate-100"><div class="w-10 h-10 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mr-3"><i class="fas fa-history"></i></div><div><div class="font-bold text-slate-700">修改紀錄</div><div class="text-xs text-slate-500">僅會長/管理員可看</div></div></button>
+                <button onclick="app.downloadSelf()" class="w-full text-left p-4 bg-slate-50 hover:bg-slate-100 rounded-xl flex items-center transition border border-slate-100"><div class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center mr-3"><i class="fas fa-download"></i></div><div><div class="font-bold text-slate-700">下載備份</div><div class="text-xs text-slate-500">將目前的網頁存成新檔案</div></div></button>
+                <button onclick="app.exportCSV()" class="w-full text-left p-4 bg-slate-50 hover:bg-slate-100 rounded-xl flex items-center transition border border-slate-100"><div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-3"><i class="fas fa-file-csv"></i></div><div><div class="font-bold text-slate-700">匯出 Excel</div><div class="text-xs text-slate-500">將名單匯出為 CSV 格式</div></div></button>
+            </div>
+            <div class="mt-6 pt-4 border-t border-slate-100">
+                <p class="text-xs font-bold text-slate-500 mb-2">雲端同步金鑰 (Firebase)</p>
+                <textarea id="firebaseConfigInput" rows="3" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600 font-mono mb-4 appearance-none outline-none focus:border-blue-300" placeholder='{ "apiKey": "..." }'></textarea>
+                <div class="flex justify-between items-center"><button onclick="app.resetToDemo()" class="text-red-400 text-xs hover:text-red-600">重置資料</button><button onclick="app.saveConfig()" class="px-4 py-2 bg-slate-800 text-white rounded-xl hover:bg-slate-900 transition shadow-lg">連線</button></div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="historyModal" class="modal-overlay fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto border border-white/50">
+            <button onclick="app.closeModal('historyModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-times text-xl"></i></button>
+            <h3 class="text-xl font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100"><i class="fas fa-history mr-2 text-yellow-600"></i>修改紀錄</h3>
+            <div id="historyList" class="space-y-3"></div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script> 
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
+    <script src="./js/config.js"></script> 
+    <script type="module" src="./js/app.js"></script> 
 </body>
 </html>
