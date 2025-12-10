@@ -1,7 +1,7 @@
-// app.js - Full Fixed Version
+// app.js - Optimized for Pre-Leave & Delete Protection
 
 if (typeof window.AppConfig === 'undefined') {
-    console.error("Config not loaded.");
+    console.error("Configuration (config.js) not loaded.");
     document.body.innerHTML = '<div style="padding: 50px; text-align: center; color: red;">錯誤：config.js 未載入。</div>';
 }
 
@@ -10,8 +10,10 @@ const { FIREBASE_CONFIG, COLLECTION_NAMES, SEED_DATA, SEED_GROUPS, SEED_ACTIVITI
 
 const App = {
     db: null, auth: null,
-    members: [], groups: [], activities: [], history: [],
-    raidThemes: ['GVG 攻城戰', '公會副本', '野外王'],
+    members: [], groups: [], activities: [], history: [], 
+    leaves: [], // [New] 獨立的預先請假資料
+    raidThemes: ['GVG 攻城戰'], // [Updated] 預設只保留 GVG
+    
     currentTab: 'home', 
     currentFilter: 'all', currentJobFilter: 'all', 
     currentSquadRoleFilter: 'all', currentModalRoleFilter: 'all', 
@@ -39,12 +41,14 @@ const App = {
         const storedMem = localStorage.getItem('row_local_members');
         const storedGrp = localStorage.getItem('row_local_groups');
         const storedAct = localStorage.getItem('row_local_activities');
+        const storedLeaves = localStorage.getItem('row_local_leaves'); // [New]
         const storedHistory = localStorage.getItem('row_mod_history');
         const storedThemes = localStorage.getItem('row_local_themes');
         
         this.members = storedMem ? JSON.parse(storedMem).map(m => this.normalizeMemberData(m)) : SEED_DATA.map(m => this.normalizeMemberData(m));
         this.groups = storedGrp ? JSON.parse(storedGrp) : SEED_GROUPS;
         this.activities = storedAct ? JSON.parse(storedAct) : (SEED_ACTIVITIES || []);
+        this.leaves = storedLeaves ? JSON.parse(storedLeaves) : []; // [New]
         this.history = storedHistory ? JSON.parse(storedHistory) : [];
         if (storedThemes) this.raidThemes = JSON.parse(storedThemes);
         this.members = this.sortMembers(this.members);
@@ -76,12 +80,16 @@ const App = {
             const arr = []; snap.forEach(d => arr.push({ id: d.id, ...d.data() })); 
             this.groups = arr; this.saveLocal('groups'); this.render(); 
         });
-        if (COLLECTION_NAMES.ACTIVITIES) {
-            this.db.collection(COLLECTION_NAMES.ACTIVITIES).onSnapshot(snap => {
-                const arr = []; snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
-                this.activities = arr; this.saveLocal('activities'); this.render();
-            });
-        }
+        this.db.collection(COLLECTION_NAMES.ACTIVITIES).onSnapshot(snap => {
+            const arr = []; snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
+            this.activities = arr; this.saveLocal('activities'); this.render();
+        });
+        // [New] 預先請假同步
+        const leavesCollection = 'leaves'; 
+        this.db.collection(leavesCollection).onSnapshot(snap => {
+            const arr = []; snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
+            this.leaves = arr; this.saveLocal('leaves'); this.render();
+        });
     },
 
     sortMembers: function(membersArray) {
@@ -97,6 +105,7 @@ const App = {
             if (key === 'members' || key === 'all') localStorage.setItem('row_local_members', JSON.stringify(this.members));
             if (key === 'groups' || key === 'all') localStorage.setItem('row_local_groups', JSON.stringify(this.groups));
             if (key === 'activities' || key === 'all') localStorage.setItem('row_local_activities', JSON.stringify(this.activities));
+            if (key === 'leaves' || key === 'all') localStorage.setItem('row_local_leaves', JSON.stringify(this.leaves)); // [New]
             if (key === 'themes' || key === 'all') localStorage.setItem('row_local_themes', JSON.stringify(this.raidThemes));
             localStorage.setItem('row_mod_history', JSON.stringify(this.history));
             this.render();
@@ -135,8 +144,13 @@ const App = {
         const rankSelect = document.getElementById('rank'), lockIcon = document.getElementById('rankLockIcon');
         if (this.userRole === 'master') { if (rankSelect) rankSelect.disabled = false; if (lockIcon) lockIcon.className = "fas fa-unlock text-blue-500 text-xs ml-2"; } 
         else { if (rankSelect) rankSelect.disabled = true; if (lockIcon) lockIcon.className = "fas fa-lock text-slate-300 text-xs ml-2"; }
+        
+        // 控制新增與刪除主題按鈕
         const addSubBtn = document.getElementById('addSubjectBtn');
+        const delSubBtn = document.getElementById('delSubjectBtn');
         if (addSubBtn) { if (this.userRole === 'master') addSubBtn.classList.remove('hidden'); else addSubBtn.classList.add('hidden'); }
+        if (delSubBtn) { if (this.userRole === 'master') delSubBtn.classList.remove('hidden'); else delSubBtn.classList.add('hidden'); }
+        
         this.render();
     },
 
@@ -172,29 +186,69 @@ const App = {
         const cnt = document.querySelector('#view-home .ro-menu-btn .ro-btn-content p'); if (cnt) cnt.innerText = `Guild Members (${this.members.length})`;
     },
 
+    // --- 請假管理邏輯 (NEW: 預先請假支援) ---
     toggleLeaveForm: function() { document.getElementById('leaveFormContainer').classList.toggle('hidden'); },
+    
+    // [New] 切換預先請假模式
+    togglePreLeaveMode: function() {
+        const isPre = document.getElementById('isPreLeave').checked;
+        const subSelect = document.getElementById('leaveSubjectSelect');
+        const memSelect = document.getElementById('leaveMemberSelect');
+        const arrow = document.getElementById('subjectArrow');
+        
+        if (isPre) {
+            subSelect.innerHTML = '<option value="PRE_LEAVE" selected>全日 (不分主題)</option>';
+            subSelect.disabled = true;
+            subSelect.classList.add('bg-orange-50', 'text-orange-500');
+            if(arrow) arrow.classList.add('hidden');
+            
+            // 直接載入所有成員
+            memSelect.disabled = false;
+            memSelect.innerHTML = '<option value="" disabled selected>選擇人員...</option>';
+            // 排序成員
+            const sorted = [...this.members].sort((a,b) => a.gameName.localeCompare(b.gameName));
+            sorted.forEach(m => {
+                memSelect.innerHTML += `<option value="${m.id}">${m.gameName}</option>`;
+            });
+        } else {
+            // 恢復正常模式
+            subSelect.classList.remove('bg-orange-50', 'text-orange-500');
+            if(arrow) arrow.classList.remove('hidden');
+            this.updateLeaveSubjectSelect(); // 重跑日期檢查
+        }
+    },
+
     initLeaveForm: function() {
         const d = document.getElementById('leaveDateInput'), n = document.getElementById('leaveNote');
         d.value = new Date().toISOString().split('T')[0]; n.value = '';
         const s = document.getElementById('leaveSubjectSelect'), m = document.getElementById('leaveMemberSelect');
         s.innerHTML = '<option value="" disabled selected>請先選日期</option>'; s.disabled = true;
         m.innerHTML = '<option value="" disabled selected>請先選主題</option>'; m.disabled = true;
+        
+        document.getElementById('isPreLeave').checked = false; // 重置 Checkbox
         document.getElementById('leaveFormContainer').classList.add('hidden');
         document.getElementById('leaveSuccessMsg').classList.add('hidden');
+        
         const fs = document.getElementById('leaveFilterSubject');
         if(fs) fs.innerHTML = '<option value="">所有主題</option>' + this.raidThemes.map(t => `<option value="${t}">${t}</option>`).join('');
         this.updateLeaveSubjectSelect(); this.renderLeaveList();
     },
+
     updateLeaveSubjectSelect: function() {
+        if(document.getElementById('isPreLeave').checked) return; // 預先請假模式下不執行
+        
         const date = document.getElementById('leaveDateInput').value, s = document.getElementById('leaveSubjectSelect');
         s.innerHTML = '<option value="" disabled selected>請選擇主題...</option>';
         if (!date) { s.disabled = true; return; }
         const activeSubjects = new Set();
         this.groups.filter(g => g.type === 'gvg' && g.date === date).forEach(g => { if (g.subject) activeSubjects.add(g.subject); });
-        if (activeSubjects.size === 0) { s.innerHTML = '<option value="" disabled selected>該日無活動</option>'; s.disabled = true; } 
+        if (activeSubjects.size === 0) { s.innerHTML = '<option value="" disabled selected>該日無活動 (可選預先請假)</option>'; s.disabled = true; } 
         else { activeSubjects.forEach(sub => s.innerHTML += `<option value="${sub}">${sub}</option>`); s.disabled = false; }
     },
+
     updateLeaveMemberSelect: function() {
+        if(document.getElementById('isPreLeave').checked) return;
+
         const date = document.getElementById('leaveDateInput').value, sub = document.getElementById('leaveSubjectSelect').value, m = document.getElementById('leaveMemberSelect');
         m.innerHTML = '<option value="" disabled selected>選擇人員...</option>';
         if (!date || !sub) { m.disabled = true; return; }
@@ -210,40 +264,71 @@ const App = {
             }
         });}
     },
+
     handleLeaveSubmit: function() {
-        const d = document.getElementById('leaveDateInput').value, s = document.getElementById('leaveSubjectSelect').value, mid = document.getElementById('leaveMemberSelect').value, n = document.getElementById('leaveNote').value;
-        if (!d || !s || !mid) { alert("請完整填寫"); return; }
-        const targetGroups = this.groups.filter(g => g.type === 'gvg' && g.date === d && g.subject === s);
-        let updated = false;
-        targetGroups.forEach(group => {
-            const idx = group.members.findIndex(m => (typeof m === 'string' ? m : m.id) === mid);
-            if (idx !== -1) {
-                let m = group.members[idx];
-                if (typeof m === 'string') { m = { id: m, status: 'leave', subId: null, leaveDate: d, leaveNote: n }; } else { m.status = 'leave'; m.leaveDate = d; m.leaveNote = n; }
-                group.members[idx] = m; this.saveGroupUpdate(group); updated = true;
-            }
-        });
-        if (updated) {
+        const d = document.getElementById('leaveDateInput').value;
+        const n = document.getElementById('leaveNote').value;
+        const mid = document.getElementById('leaveMemberSelect').value;
+        const isPre = document.getElementById('isPreLeave').checked;
+        const s = isPre ? '預先請假' : document.getElementById('leaveSubjectSelect').value;
+
+        if (!d || !mid) { alert("請完整填寫日期與人員"); return; }
+        if (!isPre && !s) { alert("請選擇主題"); return; }
+
+        let success = false;
+
+        if (isPre) {
+            // [New] 存入 leaves 集合
+            const newLeave = { id: 'l_' + Date.now(), memberId: mid, date: d, note: n, type: 'pre-leave' };
+            if (this.mode === 'firebase') { this.db.collection('leaves').add(newLeave); }
+            else { this.leaves.push(newLeave); this.saveLocal('leaves'); }
+            success = true;
+        } else {
+            // 原本邏輯：存入 Group
+            const targetGroups = this.groups.filter(g => g.type === 'gvg' && g.date === d && g.subject === s);
+            if (targetGroups.length === 0) { alert("找不到該主題的隊伍"); return; }
+            targetGroups.forEach(group => {
+                const idx = group.members.findIndex(m => (typeof m === 'string' ? m : m.id) === mid);
+                if (idx !== -1) {
+                    let m = group.members[idx];
+                    if (typeof m === 'string') { m = { id: m, status: 'leave', subId: null, leaveDate: d, leaveNote: n }; } else { m.status = 'leave'; m.leaveDate = d; m.leaveNote = n; }
+                    group.members[idx] = m; this.saveGroupUpdate(group); success = true;
+                }
+            });
+        }
+
+        if (success) {
             this.logChange('新增請假', `${d} ${s} - ${n}`, mid);
             const msg = document.getElementById('leaveSuccessMsg'); msg.classList.remove('hidden'); setTimeout(() => msg.classList.add('hidden'), 3000);
             this.toggleLeaveForm(); this.renderLeaveList();
-            // Optional: this.syncToGoogleSheet(...)
-        } else { alert("找不到該成員所在的隊伍"); }
+        } else { alert("發生錯誤：無法寫入請假紀錄"); }
     },
+
     renderLeaveList: function() {
         const container = document.getElementById('leaveListGrid'), noMsg = document.getElementById('noLeaveMsg');
         const sName = document.getElementById('leaveSearch').value.toLowerCase(), fDate = document.getElementById('leaveFilterDate').value, fSub = document.getElementById('leaveFilterSubject').value;
         let allLeaves = [];
+
+        // 1. 抓取隊伍內的請假
         this.groups.forEach(g => {
             if (!g.members || g.type !== 'gvg') return;
             g.members.forEach(m => {
                 const isObj = typeof m !== 'string';
                 if (isObj && m.status === 'leave') {
                     const memProfile = this.members.find(x => x.id === m.id);
-                    if (memProfile) { allLeaves.push({ groupId: g.id, groupName: g.name, subject: g.subject || 'GVG 攻城戰', date: g.date || '未設定', memberId: memProfile.id, gameName: memProfile.gameName, mainClass: memProfile.mainClass, note: m.leaveNote || '', subId: m.subId }); }
+                    if (memProfile) { allLeaves.push({ source: 'group', groupId: g.id, groupName: g.name, subject: g.subject || 'GVG 攻城戰', date: g.date || '未設定', memberId: memProfile.id, gameName: memProfile.gameName, mainClass: memProfile.mainClass, note: m.leaveNote || '', subId: m.subId }); }
                 }
             });
         });
+
+        // 2. 抓取預先請假 (leaves)
+        this.leaves.forEach(l => {
+            const memProfile = this.members.find(x => x.id === l.memberId);
+            if (memProfile) {
+                allLeaves.push({ source: 'pre', id: l.id, groupName: '全日請假', subject: '預先請假', date: l.date, memberId: memProfile.id, gameName: memProfile.gameName, mainClass: memProfile.mainClass, note: l.note || '', subId: null });
+            }
+        });
+
         const filtered = allLeaves.filter(L => {
             return L.gameName.toLowerCase().includes(sName) && (fDate ? L.date === fDate : true) && (fSub ? L.subject === fSub : true);
         });
@@ -251,12 +336,16 @@ const App = {
         document.getElementById('leaveCountBadge').innerText = `${filtered.length} 人`;
         if (filtered.length === 0) { container.innerHTML = ''; noMsg.classList.remove('hidden'); return; }
         noMsg.classList.add('hidden');
+        
         container.innerHTML = filtered.map(L => {
             const subMem = L.subId ? this.members.find(m => m.id === L.subId) : null;
-            const subText = subMem ? `<span class="text-blue-600"><i class="fas fa-exchange-alt mr-1"></i>替補: ${subMem.gameName}</span>` : '<span class="text-red-400">尚未指定替補</span>';
-            return `<div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-l-orange-500 flex justify-between items-start relative overflow-hidden"><div class="absolute right-0 top-0 p-2 opacity-10 text-6xl text-orange-200"><i class="fas fa-coffee"></i></div><div class="relative z-10"><div class="flex items-center gap-2 mb-1"><span class="font-bold text-slate-800 text-lg">${L.gameName}</span><span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded">${L.mainClass.split('(')[0]}</span></div><div class="text-xs text-slate-500 font-bold mb-1"><span class="bg-slate-100 px-1 rounded mr-1">${L.subject}</span> ${L.groupName}</div><div class="text-sm bg-orange-50 text-orange-800 px-3 py-2 rounded-lg inline-block mb-2"><div class="font-bold flex items-center"><i class="far fa-calendar-alt mr-2"></i>${L.date}</div><div class="text-xs mt-1 opacity-80">${L.note || '無備註'}</div></div><div class="text-xs font-bold bg-white border border-slate-100 rounded px-2 py-1 w-fit shadow-sm">${subText}</div></div><button onclick="app.cancelLeave('${L.groupId}', '${L.memberId}')" class="text-slate-300 hover:text-red-500 p-2 transition z-20" title="取消請假"><i class="fas fa-times"></i></button></div>`;
+            const subText = subMem ? `<span class="text-blue-600"><i class="fas fa-exchange-alt mr-1"></i>替補: ${subMem.gameName}</span>` : (L.source==='pre' ? '-' : '<span class="text-red-400">尚未指定替補</span>');
+            const deleteAction = L.source === 'group' ? `app.cancelLeave('${L.groupId}', '${L.memberId}')` : `app.cancelPreLeave('${L.id}')`;
+            
+            return `<div class="bg-white p-4 rounded-xl shadow-sm border-l-4 ${L.source==='pre'?'border-l-gray-500':'border-l-orange-500'} flex justify-between items-start relative overflow-hidden"><div class="absolute right-0 top-0 p-2 opacity-10 text-6xl text-orange-200"><i class="fas fa-coffee"></i></div><div class="relative z-10"><div class="flex items-center gap-2 mb-1"><span class="font-bold text-slate-800 text-lg">${L.gameName}</span><span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded">${L.mainClass.split('(')[0]}</span></div><div class="text-xs text-slate-500 font-bold mb-1"><span class="bg-slate-100 px-1 rounded mr-1">${L.subject}</span> ${L.groupName}</div><div class="text-sm bg-orange-50 text-orange-800 px-3 py-2 rounded-lg inline-block mb-2"><div class="font-bold flex items-center"><i class="far fa-calendar-alt mr-2"></i>${L.date}</div><div class="text-xs mt-1 opacity-80">${L.note || '無備註'}</div></div><div class="text-xs font-bold bg-white border border-slate-100 rounded px-2 py-1 w-fit shadow-sm">${subText}</div></div><button onclick="${deleteAction}" class="text-slate-300 hover:text-red-500 p-2 transition z-20" title="取消請假"><i class="fas fa-times"></i></button></div>`;
         }).join('');
     },
+
     cancelLeave: function(groupId, memberId) {
         if (!confirm("確定要取消此請假紀錄嗎？")) return;
         const group = this.groups.find(g => g.id === groupId); if (!group) return;
@@ -264,6 +353,14 @@ const App = {
         if (idx === -1) return;
         let m = group.members[idx]; m.status = 'pending'; m.leaveDate = null; m.leaveNote = null;
         group.members[idx] = m; this.saveGroupUpdate(group); this.renderLeaveList(); 
+    },
+    
+    // [New] 取消預先請假
+    cancelPreLeave: function(leaveId) {
+        if (!confirm("確定要取消此預先請假嗎？")) return;
+        if (this.mode === 'firebase') { this.db.collection('leaves').doc(leaveId).delete(); }
+        else { this.leaves = this.leaves.filter(l => l.id !== leaveId); this.saveLocal('leaves'); }
+        this.renderLeaveList();
     },
 
     renderMembers: function() {
@@ -404,6 +501,23 @@ const App = {
     },
     saveGroupUpdate: function(group) { if (this.mode === 'firebase') this.db.collection(COLLECTION_NAMES.GROUPS).doc(group.id).update({ members: group.members }); else this.saveLocal('groups'); },
     addCustomSubject: function() { const newSub = prompt("請輸入新主題名稱："); if (newSub && !this.raidThemes.includes(newSub)) { this.raidThemes.push(newSub); this.saveLocal('themes'); this.renderSubjectOptions(newSub); } },
+    
+    // [Updated] 刪除防呆
+    deleteCustomSubject: function() {
+        const select = document.getElementById('squadSubject');
+        const target = select.value;
+        const defaults = ['GVG 攻城戰']; // 只保護這個
+        if(defaults.includes(target)) { alert("系統預設主題無法刪除！"); return; }
+        
+        // 檢查是否使用中
+        const isUsed = this.groups.some(g => g.subject === target);
+        if(isUsed) { alert(`主題「${target}」尚有隊伍正在使用，無法刪除！`); return; }
+
+        if(!confirm(`確定要永久刪除主題「${target}」嗎？`)) return;
+        this.raidThemes = this.raidThemes.filter(t => t !== target);
+        this.saveLocal('themes');
+        this.renderSubjectOptions(); 
+    },
     renderSubjectOptions: function(selectedVal) { const select = document.getElementById('squadSubject'); if (!select) return; select.innerHTML = this.raidThemes.map(t => `<option value="${t}">${t}</option>`).join(''); if (selectedVal) select.value = selectedVal; },
     openSquadModal: function(id) {
         const type = this.currentTab === 'gvg' ? 'gvg' : 'groups'; if(!['master', 'admin', 'commander'].includes(this.userRole)) return; 
@@ -421,12 +535,40 @@ const App = {
         app.showModal('squadModal');
     },
     toggleSquadMember: function(id) { const index = this.currentSquadMembers.findIndex(m => m.id === id); const limit = this.currentTab === 'gvg' ? 5 : 12; if (index > -1) { this.currentSquadMembers.splice(index, 1); } else { if (this.currentSquadMembers.length >= limit) { alert(`此類型隊伍最多 ${limit} 人`); return; } this.currentSquadMembers.push({ id: id, status: 'pending' }); } this.renderSquadMemberSelect(); },
+    
+    // [Updated] 選人防呆：當日已請假者無法選取
     renderSquadMemberSelect: function() {
-        const search = document.getElementById('memberSearch').value.toLowerCase(); let availableMembers = [...this.members];
+        const search = document.getElementById('memberSearch').value.toLowerCase(); 
+        const targetDate = document.getElementById('squadDate').value;
+        let availableMembers = [...this.members];
+        
+        // 找出當日已預先請假的人員ID
+        const unavailableMembers = this.leaves.filter(l => l.date === targetDate).map(l => l.memberId);
+
         const filtered = availableMembers.filter(m => { const matchSearch = (m.gameName + m.lineName + m.mainClass + (m.role||'')).toLowerCase().includes(search); let matchRole = true; if (this.currentModalRoleFilter !== 'all') { const f = this.currentModalRoleFilter; matchRole = m.role.includes(f) || (f === '坦' && m.mainClass.includes('坦')); } return matchSearch && matchRole; });
         const isSelected = (mid) => this.currentSquadMembers.some(sm => sm.id === mid); filtered.sort((a,b) => (isSelected(a.id) === isSelected(b.id)) ? 0 : isSelected(a.id) ? -1 : 1);
         document.getElementById('selectedCount').innerText = `${this.currentSquadMembers.length}/${this.currentTab === 'gvg' ? 5 : 12}`;
-        document.getElementById('squadMemberSelect').innerHTML = filtered.map(m => { const checked = isSelected(m.id); const style = JOB_STYLES.find(s => s.key.some(k => (m.mainClass||'').includes(k))) || { class: 'bg-job-default', icon: 'fa-user' }; return `<label class="flex items-center space-x-2 p-2 rounded border border-blue-100 transition select-none ${checked ? 'bg-blue-50 border-blue-300' : 'hover:bg-slate-50 bg-white cursor-pointer'}"><input type="checkbox" value="${m.id}" class="rounded text-blue-500" ${checked?'checked':''} onchange="app.toggleSquadMember('${m.id}')"><div class="w-6 h-6 rounded-full flex items-center justify-center text-xs ${style.class.replace('bg-', 'text-')} bg-opacity-20"><i class="fas ${style.icon}"></i></div><div class="min-w-0 flex-grow"><div class="text-xs font-bold text-slate-700 truncate">${m.gameName}</div><div class="text-[10px] text-slate-400">${m.mainClass.split('(')[0]} <span class="${m.role.includes('輸出')?'text-red-400':m.role.includes('坦')?'text-blue-400':'text-green-400'}">${m.role}</span></div></div></label>`; }).join('');
+        
+        document.getElementById('squadMemberSelect').innerHTML = filtered.map(m => { 
+            const checked = isSelected(m.id); 
+            const style = JOB_STYLES.find(s => s.key.some(k => (m.mainClass||'').includes(k))) || { class: 'bg-job-default', icon: 'fa-user' }; 
+            
+            // 防呆邏輯
+            const isUnavailable = unavailableMembers.includes(m.id);
+            const disabledClass = isUnavailable ? 'opacity-50 cursor-not-allowed bg-slate-100' : 'hover:bg-slate-50 bg-white cursor-pointer';
+            const clickAction = isUnavailable ? '' : `onchange="app.toggleSquadMember('${m.id}')"`;
+            const nameSuffix = isUnavailable ? ' <span class="text-red-500 font-bold">(已請假)</span>' : '';
+
+            return `
+            <label class="flex items-center space-x-2 p-2 rounded border border-blue-100 transition select-none ${checked ? 'bg-blue-50 border-blue-300' : disabledClass}">
+                <input type="checkbox" value="${m.id}" class="rounded text-blue-500" ${checked?'checked':''} ${isUnavailable?'disabled':''} ${clickAction}>
+                <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs ${style.class.replace('bg-', 'text-')} bg-opacity-20"><i class="fas ${style.icon}"></i></div>
+                <div class="min-w-0 flex-grow">
+                    <div class="text-xs font-bold text-slate-700 truncate">${m.gameName}${nameSuffix}</div>
+                    <div class="text-[10px] text-slate-400">${m.mainClass.split('(')[0]} <span class="${m.role.includes('輸出')?'text-red-400':m.role.includes('坦')?'text-blue-400':'text-green-400'}">${m.role}</span></div>
+                </div>
+            </label>`; 
+        }).join('');
         this.updateLeaderOptions();
     },
     updateLeaderOptions: function() {
