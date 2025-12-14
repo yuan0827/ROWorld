@@ -172,14 +172,28 @@ const app = {
         this.checkAdminUI();
     },
 
+    // --- 修正後的 switchTab 函式 (請取代原有的) ---
     switchTab(tab) {
-        document.querySelectorAll('main > div').forEach(el => el.classList.add('hidden'));
-        document.getElementById(`view-${tab}`).classList.remove('hidden');
+        // 1. 隱藏所有主畫面
+        const views = document.querySelectorAll('main > div');
+        views.forEach(el => el.classList.add('hidden'));
+
+        // 2. 顯示目標畫面 (加入防呆檢查)
+        const targetView = document.getElementById(`view-${tab}`);
+        if (targetView) {
+            targetView.classList.remove('hidden');
+        } else {
+            console.error(`錯誤: 找不到 ID 為 view-${tab} 的分頁元素。請檢查 HTML。`);
+            return; // 找不到就停止，避免崩潰
+        }
         
+        // 3. 更新導覽列按鈕樣式
         document.querySelectorAll('.nav-pill').forEach(el => {
             el.classList.remove('bg-slate-800', 'text-white', 'shadow-md');
             el.classList.add('text-slate-500', 'hover:bg-slate-100');
         });
+
+        // 4. 設定當前按鈕啟用狀態 (加入防呆檢查)
         const activeBtn = document.getElementById(`tab-${tab}`);
         if(activeBtn) {
             activeBtn.classList.add('bg-slate-800', 'text-white', 'shadow-md');
@@ -188,7 +202,10 @@ const app = {
 
         this.currentTab = tab;
         
+        // 5. 控制浮動按鈕 (FAB)
         const fab = document.getElementById('mainActionBtn');
+        if (!fab) return; // 防呆
+
         if (tab === 'home') {
             fab.classList.add('hidden');
         } else {
