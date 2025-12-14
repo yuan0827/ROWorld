@@ -1,7 +1,7 @@
-// js/config.js - 最終完整版 (v5.7)
+// js/config.js - 最終修正版 (v5.8)
 
 window.AppConfig = {
-    // 1. 資料庫集合名稱 (程式運作核心)
+    // 1. 資料庫集合名稱 (這段最重要，缺了會報錯)
     COLLECTION_NAMES: {
         MEMBERS: 'members',
         GROUPS: 'groups',
@@ -40,7 +40,7 @@ window.AppConfig = {
         "待定": ["待定"]
     },
 
-    // 4. 職業樣式 (卡片顏色)
+    // 4. 職業樣式
     JOB_STYLES: [
         { key: ['騎士'], class: 'bg-job-knight', icon: 'fa-shield-alt' },
         { key: ['十字軍'], class: 'bg-job-crusader', icon: 'fa-shield-alt' },
