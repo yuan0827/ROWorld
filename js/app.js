@@ -1,5 +1,5 @@
 // js/app.js
-// Production v6.0 - Fix GVG Styles (Inline Tailwind) & Activity Search
+// Production v6.1 - Remove Member Borders in Squads (Clean UI) & Fix Layout
 
 // 1. 強制檢查 Config
 if (typeof window.AppConfig === 'undefined') {
@@ -343,7 +343,7 @@ const App = {
         this.logChange('成員刪除', `ID: ${id}`, id); this.closeModal('editModal');
     },
 
-    // 2. 修正 GVG 團體戰版面跑位 (關鍵修改：強制 Tailwind 樣式，不依賴外部 CSS)
+    // 2. 修正 GVG 團體戰版面跑位 & 移除成員邊框顏色 (Optimization Here)
     renderSquads: function() {
         const type = this.currentTab === 'gvg' ? 'gvg' : 'groups';
         const search = document.getElementById('groupSearchInput').value.toLowerCase();
@@ -366,7 +366,6 @@ const App = {
         const grid = document.getElementById('squadGrid'), emptyMsg = document.getElementById('noSquadsMsg');
         grid.innerHTML = '';
 
-        // [Fix] 強制佔滿整行 (col-span-full) 防止跑版
         const controlsContainer = document.createElement('div');
         controlsContainer.className = "col-span-1 lg:col-span-2 flex flex-col md:flex-row gap-3 mb-4 p-1 w-full";
         
@@ -394,10 +393,12 @@ const App = {
             const list = groupMembers.map(m => {
                 if (this.currentSquadRoleFilter !== 'all') { const filterKey = this.currentSquadRoleFilter; const match = m.role.includes(filterKey) || (filterKey === '坦' && m.mainClass.includes('坦')); if (!match) return ''; }
                 const job = (m.mainClass || '').split('(')[0]; 
-                let borderColor = 'border-l-slate-300', roleColor = 'text-slate-400';
-                if (m.role.includes('輸出')) { borderColor = 'border-l-red-400'; roleColor = 'text-red-500'; }
-                else if (m.role.includes('坦')) { borderColor = 'border-l-blue-400'; roleColor = 'text-blue-500'; }
-                else if (m.role.includes('輔助')) { borderColor = 'border-l-green-400'; roleColor = 'text-green-500'; }
+                
+                // [Modified] 移除左側邊框顏色，只保留文字顏色識別
+                let roleColor = 'text-slate-400';
+                if (m.role.includes('輸出')) { roleColor = 'text-red-500'; }
+                else if (m.role.includes('坦')) { roleColor = 'text-blue-500'; }
+                else if (m.role.includes('輔助')) { roleColor = 'text-green-500'; }
 
                 let actionUI = "", rowClass = "";
                 if (isGVG) {
@@ -415,10 +416,10 @@ const App = {
                     actionUI = `<div class="flex items-center gap-2">${subUI}<div class="gvg-light bg-light-yellow ${m.status === 'leave' ? 'active' : ''}" title="請假"></div><div class="gvg-light ${m.status === 'ready' ? 'bg-light-green active' : 'bg-light-red'}" title="狀態" onclick="event.stopPropagation(); app.toggleGvgStatus('${group.id}', '${m.id}', 'ready_toggle')"></div></div>`;
                 } else { actionUI = `<span class="text-xs text-slate-300 font-mono">ID:${m.id.slice(-3)}</span>`; }
 
-                return `<div class="flex items-center justify-between text-sm py-2.5 border-b border-slate-100 last:border-b-0 hover:bg-slate-50 px-3 transition border-l-4 ${borderColor} ${rowClass}"><div class="flex items-center gap-3 min-w-0"><div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold ${roleColor}">${m.role.substring(0,1)}</div><div class="flex flex-col min-w-0"><span class="text-slate-800 font-bold truncate member-name">${m.gameName}</span><span class="text-[10px] text-slate-400 font-mono">${job}</span></div></div>${actionUI}</div>`;
+                // [Modified] 移除 border-l-4 和 borderColor 變數
+                return `<div class="flex items-center justify-between text-sm py-3 border-b border-slate-100 last:border-b-0 hover:bg-slate-50 px-4 transition ${rowClass}"><div class="flex items-center gap-3 min-w-0"><div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold ${roleColor}">${m.role.substring(0,1)}</div><div class="flex flex-col min-w-0"><span class="text-slate-800 font-bold truncate member-name">${m.gameName}</span><span class="text-[10px] text-slate-400 font-mono">${job}</span></div></div>${actionUI}</div>`;
             }).join('');
 
-            // [Fix] 直接使用 Tailwind 樣式，不再依賴不穩定的外部 class
             const headerClass = isGVG ? 'bg-red-50 p-4 border-b border-red-100 rounded-t-xl' : 'bg-blue-50 p-4 border-b border-blue-100 rounded-t-xl';
             const cardClass = isGVG ? 'bg-white rounded-xl shadow-md border border-slate-200 border-l-4 border-l-red-500 flex flex-col h-full' : 'bg-white rounded-xl shadow-sm border border-blue-100 flex flex-col h-full'; 
             
@@ -540,18 +541,15 @@ const App = {
         this.closeModal('squadModal');
     },
 
-    // 3. 修正 Activity 搜尋功能 & 渲染
+    // 3. Activity 搜尋功能 & 渲染
     renderActivities: function() {
         const list = document.getElementById('activityList'), emptyMsg = document.getElementById('noActivitiesMsg');
         
-        // [Fix] 讀取搜尋框內容
         const searchInput = document.getElementById('activitySearchInput');
         const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
 
-        // [Fix] 過濾活動
         const filteredActivities = this.activities.filter(act => {
             const matchName = act.name.toLowerCase().includes(searchTerm);
-            // 也搜尋得獎者
             const matchWinner = (act.winners || []).some(w => {
                 const mem = this.members.find(m => m.id === w.memberId);
                 return mem && mem.gameName.toLowerCase().includes(searchTerm);
