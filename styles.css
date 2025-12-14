@@ -1,0 +1,269 @@
+/* ======================================================
+   styles.css — Phase 1 Optimized
+   ⚠️ 職業顏色完全保留，不更動任何色碼
+   ====================================================== */
+
+/* =====================
+   Global
+   ===================== */
+body {
+  background-color: #e2e8f0;
+  color: #334155;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, Helvetica, Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+}
+
+input,
+select,
+textarea {
+  font-size: 16px !important;
+}
+
+.scroll-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scroll-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* =====================
+   Navigation Pills
+   ===================== */
+.nav-pill {
+  padding: 8px 16px;
+  font-weight: 700;
+  color: #64748b;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.nav-pill.active {
+  color: #fff;
+}
+
+/* Tab colors (unchanged) */
+#tab-members.active {
+  background-color: #3b82f6;
+  box-shadow: 0 4px 10px -2px rgba(59, 130, 246, 0.4);
+}
+#tab-gvg.active {
+  background-color: #ef4444;
+  box-shadow: 0 4px 10px -2px rgba(239, 68, 68, 0.4);
+}
+#tab-leave.active {
+  background-color: #f97316;
+  box-shadow: 0 4px 10px -2px rgba(249, 115, 22, 0.4);
+}
+#tab-groups.active {
+  background-color: #22c55e;
+  box-shadow: 0 4px 10px -2px rgba(34, 197, 94, 0.4);
+}
+#tab-activity.active {
+  background-color: #eab308;
+  box-shadow: 0 4px 10px -2px rgba(234, 179, 8, 0.4);
+}
+
+/* =====================
+   Card System
+   ===================== */
+.card,
+.menu-card,
+.squad-card,
+.activity-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  overflow: hidden;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  position: relative;
+}
+
+.card:active {
+  transform: scale(0.985);
+}
+
+/* =====================
+   Member Card
+   ===================== */
+.member-card {
+  display: flex;
+  align-items: stretch;
+  min-height: 95px;
+  border-left-width: 4px;
+}
+
+.job-icon-box {
+  width: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  background-color: #f8fafc;
+  border-right: 1px solid #f1f5f9;
+  color: #64748b;
+}
+
+/* =====================
+   職業顏色（⚠️ 完全保留原色碼）
+   ===================== */
+.border-job-knight,
+.border-job-騎士 {
+  border-left-color: #ff9999;
+}
+.border-job-crusader,
+.border-job-十字軍 {
+  border-left-color: #ff6666;
+}
+.border-job-blacksmith,
+.border-job-鐵匠 {
+  border-left-color: #ffcc99;
+}
+.border-job-hunter,
+.border-job-獵人 {
+  border-left-color: #ffff99;
+}
+.border-job-bard,
+.border-job-詩人 {
+  border-left-color: #ffcc00;
+}
+.border-job-alchemist,
+.border-job-煉金 {
+  border-left-color: #ff9933;
+}
+.border-job-priest,
+.border-job-神官 {
+  border-left-color: #ccffcc;
+}
+.border-job-monk,
+.border-job-武僧 {
+  border-left-color: #99cc99;
+}
+.border-job-wizard,
+.border-job-巫師 {
+  border-left-color: #ccffff;
+}
+.border-job-sage,
+.border-job-賢者 {
+  border-left-color: #66ccff;
+}
+.border-job-gunslinger,
+.border-job-槍手 {
+  border-left-color: #ffccff;
+}
+.border-job-dancer,
+.border-job-舞孃 {
+  border-left-color: #ff66cc;
+}
+.border-job-assassin,
+.border-job-刺客 {
+  border-left-color: #e6ccff;
+}
+.border-job-rogue,
+.border-job-流氓 {
+  border-left-color: #b366ff;
+}
+.border-job-default,
+.border-job-初心者 {
+  border-left-color: #cbd5e1;
+}
+
+/* =====================
+   Tags
+   ===================== */
+.tag {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.tag-dps {
+  background: #fee2e2;
+  color: #991b1b;
+}
+.tag-sup {
+  background: #dcfce7;
+  color: #166534;
+}
+.tag-tank {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+/* =====================
+   GVG Light (merged)
+   ===================== */
+.gvg-light {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px #cbd5e1;
+  transition: all 0.2s ease;
+  opacity: 0.25;
+  filter: grayscale(100%);
+}
+
+.gvg-light:hover {
+  transform: scale(1.15);
+  opacity: 0.7;
+}
+
+.gvg-light.active {
+  opacity: 1;
+  filter: grayscale(0%);
+  transform: scale(1.1);
+  box-shadow: 0 0 8px currentColor;
+}
+
+.bg-light-red {
+  background-color: #ef4444;
+  color: #ef4444;
+}
+.bg-light-green {
+  background-color: #22c55e;
+  color: #22c55e;
+}
+.bg-light-yellow {
+  background-color: #fbbf24;
+  color: #fbbf24;
+}
+
+/* =====================
+   Utilities
+   ===================== */
+.admin-mode-on {
+  color: #3b82f6 !important;
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe !important;
+}
+
+@keyframes fadeInOpacity {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeInOpacity 0.4s ease-out forwards;
+}
+
+@media (max-width: 640px) {
+  .nav-pill {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+}
