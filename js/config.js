@@ -1,5 +1,29 @@
-// config.js
-const FIREBASE_CONFIG = {
+// js/config.js
+// Production v5.3
+
+// 1. 職業與流派定義 (對應舊資料結構，確保下拉選單正確)
+export const jobData = {
+    "騎士": ["龍", "敏爆", "其他"],
+    "十字軍": ["坦", "輸出", "其他"],
+    "鐵匠": ["戰鐵", "鍛造", "其他", "一般"],
+    "煉金": ["一般", "其他"],
+    "獵人": ["鳥", "陷阱", "AD", "其他"],
+    "詩人": ["輔助", "輸出", "一般", "其他"],
+    "舞孃": ["輔助", "輸出", "一般", "其他"],
+    "神官": ["讚美", "驅魔", "暴牧", "其他"],
+    "武僧": ["連技", "阿修", "一般", "其他"],
+    "巫師": ["隕石", "冰雷", "其他"],
+    "賢者": ["輔助", "法系", "一般", "其他"],
+    "刺客": ["敏爆", "毒", "雙刀", "一般", "其他"],
+    "流氓": ["脫裝", "輸出", "弓", "其他"],
+    "槍手": ["一般", "其他"],
+    "法師": ["隕石", "冰雷", "念", "其他"], // 補齊部分舊資料寫法
+    "初心者": ["超級初心者", "其他"],
+    "待定": ["待定"]
+};
+
+// 2. Firebase 連線設定 (來自您提供的原始檔案)
+export const firebaseConfig = {
     apiKey: "AIzaSyCxVEcgftiu7qmHhgLV-XaLzf6naBhaf-k",
     authDomain: "ro123-aae1e.firebaseapp.com",
     projectId: "ro123-aae1e",
@@ -9,120 +33,79 @@ const FIREBASE_CONFIG = {
     measurementId: "G-SVYZGQZB83"
 };
 
-const APP_ENV = 'production';
-
-const COLLECTION_NAMES = {
-    MEMBERS: 'members',
-    GROUPS: 'groups',
-    ACTIVITIES: 'activities',
-    LEAVE_REQUESTS: 'leaves'
-};
-
-const JOB_STYLES = [
-    { key: ['騎士'], class: 'bg-job-knight', icon: 'fa-shield-alt' }, { key: ['十字軍'], class: 'bg-job-crusader', icon: 'fa-cross' }, { key: ['鐵匠', '商人'], class: 'bg-job-blacksmith', icon: 'fa-hammer' },
-    { key: ['獵人', '弓箭手'], class: 'bg-job-hunter', icon: 'fa-crosshairs' }, { key: ['詩人'], class: 'bg-job-bard', icon: 'fa-music' }, { key: ['煉金'], class: 'bg-job-alchemist', icon: 'fa-flask' },
-    { key: ['神官', '服事', '牧師'], class: 'bg-job-priest', icon: 'fa-plus' }, { key: ['武僧'], class: 'bg-job-monk', icon: 'fa-fist-raised' }, { key: ['巫師', '法師'], class: 'bg-job-wizard', icon: 'fa-hat-wizard' },
-    { key: ['賢者'], class: 'bg-job-sage', icon: 'fa-book' }, { key: ['槍手'], class: 'bg-job-gunslinger', icon: 'fa-bullseye' }, { key: ['舞孃'], class: 'bg-job-dancer', icon: 'fa-star' },
-    { key: ['刺客', '盜賊'], class: 'bg-job-assassin', icon: 'fa-skull' }, { key: ['流氓'], class: 'bg-job-rogue', icon: 'fa-mask' }
+// 3. 初始成員名單 (共 73 筆，已轉換為 v5.0 格式)
+export const initialMembers = [
+    { id: "m01", gameName: "YT清燉小羔羊", lineName: "poppy🐶", baseJob: "神官", subJob: "讚美", role: "輔助", rank: "會長", intro: "公會唯一清流 出淤泥而不染" },
+    { id: "m02", gameName: "沐沐", lineName: "#Yuan", baseJob: "神官", subJob: "讚美", role: "輔助", rank: "資料管理員", intro: "" },
+    { id: "m03", gameName: "孤芳自賞", lineName: "Lam 🦄", baseJob: "獵人", subJob: "陷阱", role: "輸出", rank: "成員", intro: "" },
+    { id: "m04", gameName: "小櫻花", lineName: "alan", baseJob: "武僧", subJob: "一般", role: "輔助", rank: "成員", intro: "待領養孤兒" },
+    { id: "m05", gameName: "去去彈匣清空", lineName: "董宜坤", baseJob: "槍手", subJob: "一般", role: "輸出", rank: "成員", intro: "" },
+    { id: "m06", gameName: "恐龍跌倒", lineName: "阿智", baseJob: "獵人", subJob: "鳥", role: "待定", rank: "成員", intro: "待領養孤兒" },
+    { id: "m07", gameName: "襪子髒髒", lineName: "佳慶", baseJob: "神官", subJob: "讚美", role: "輔助", rank: "成員", intro: "" },
+    { id: "m08", gameName: "魅力四射", lineName: "騰億", baseJob: "獵人", subJob: "鳥", role: "待定", rank: "成員", intro: "" },
+    { id: "m09", gameName: "沐瑀", lineName: "Xian", baseJob: "待定", subJob: "待定", role: "待定", rank: "成員", intro: "" },
+    { id: "m10", gameName: "貓二", lineName: "咘小欣", baseJob: "待定", subJob: "待定", role: "待定", rank: "成員", intro: "" },
+    { id: "m11", gameName: "奕雲", lineName: "奕雲", baseJob: "待定", subJob: "待定", role: "待定", rank: "成員", intro: "" },
+    { id: "m12", gameName: "崔月月", lineName: "宇", baseJob: "獵人", subJob: "鳥", role: "輸出", rank: "成員", intro: "" },
+    { id: "m13", gameName: "魔魂大白鯊", lineName: "宏", baseJob: "獵人", subJob: "鳥", role: "輸出", rank: "成員", intro: "" },
+    { id: "m14", gameName: "貝席兒", lineName: "🐬", baseJob: "煉金", subJob: "一般", role: "待定", rank: "成員", intro: "待領養孤兒" },
+    { id: "m15", gameName: "渺渺喵", lineName: "賀", baseJob: "待定", subJob: "待定", role: "待定", rank: "成員", intro: "" },
+    { id: "m16", gameName: "馬爾科姆", lineName: "鄒昀諭YunYuZou", baseJob: "獵人", subJob: "鳥", role: "待定", rank: "成員", intro: "5678不同爸爸" },
+    { id: "m17", gameName: "香菜佐黑輪", lineName: "黑輪呦", baseJob: "待定", subJob: "待定", role: "待定", rank: "成員", intro: "" },
+    { id: "m18", gameName: "棨棨", lineName: "Peng", baseJob: "十字軍", subJob: "坦", role: "坦", rank: "成員", intro: "Здравствуйте ! как дела ?" },
+    { id: "m19", gameName: "開喜婆婆", lineName: "江承峻", baseJob: "待定", subJob: "待定", role: "待定", rank: "成員", intro: "" },
+    { id: "m20", gameName: "FeiFei ", lineName: "妃Fei ", baseJob: "法師", subJob: "隕石", role: "輸出", rank: "成員", intro: "" },
+    { id: "m21", gameName: "卉香", lineName: "古銘", baseJob: "刺客", subJob: "敏爆", role: "輸出", rank: "成員", intro: "" },
+    { id: "m22", gameName: "傑森七七", lineName: "傑森", baseJob: "神官", subJob: "讚美", role: "輔助", rank: "成員", intro: "" },
+    { id: "m23", gameName: "陳小圻", lineName: "陳嘉圻", baseJob: "獵人", subJob: "鳥", role: "輸出", rank: "成員", intro: "大白鯊的朋友" },
+    { id: "m24", gameName: "藤井樹", lineName: "Leo", baseJob: "法師", subJob: "隕石", role: "輸出", rank: "成員", intro: "" },
+    { id: "m25", gameName: "妞妞甜八寶", lineName: "小涵", baseJob: "神官", subJob: "讚美", role: "輔助", rank: "成員", intro: "大白鯊的母奶" },
+    { id: "m26", gameName: "", lineName: "星野悠（ホシノユウ）", baseJob: "鐵匠", subJob: "一般", role: "待定", rank: "成員", intro: "" },
+    { id: "m27", gameName: "YT泰愛玩遊戲直bo", lineName: "浩", baseJob: "槍手", subJob: "一般", role: "輸出", rank: "成員", intro: "" },
+    { id: "m28", gameName: "六六", lineName: "六六", baseJob: "十字軍", subJob: "坦", role: "坦", rank: "成員", intro: "" },
+    { id: "m29", gameName: "大雄", lineName: "灬森灬", baseJob: "槍手", subJob: "一般", role: "輸出", rank: "成員", intro: "待領養孤兒" },
+    { id: "m30", gameName: "貓璃", lineName: "陳小貓", baseJob: "刺客", subJob: "一般", role: "輸出", rank: "成員", intro: "睡神無敵朋友" },
+    { id: "m31", gameName: "迪卡普歐", lineName: "pei.yu.yang", baseJob: "鐵匠", subJob: "一般", role: "待定", rank: "成員", intro: "睡神無敵麻吉" },
+    { id: "m32", gameName: "睡神無敵", lineName: "A-Wei 黃執維", baseJob: "獵人", subJob: "鳥", role: "輸出", rank: "成員", intro: "睡神就是無敵" },
+    { id: "m33", gameName: "牧牧", lineName: "阿揚", baseJob: "槍手", subJob: "一般", role: "輸出", rank: "成員", intro: "待領養孤兒" },
+    { id: "m34", gameName: "莫忘中出", lineName: "徐小宏🖖🏼", baseJob: "槍手", subJob: "一般", role: "輸出", rank: "成員", intro: "" },
+    { id: "m35", gameName: "極度", lineName: "Wang", baseJob: "法師", subJob: "念", role: "輸出", rank: "成員", intro: "" },
+    { id: "m36", gameName: "水鏡是條狗", lineName: "Ryan", baseJob: "待定", subJob: "待定", role: "待定", rank: "成員", intro: "" },
+    { id: "m37", gameName: "新竹房仲兩廣", lineName: "兩廣寬", baseJob: "賢者", subJob: "一般", role: "輔助", rank: "成員", intro: "" },
+    { id: "m38", gameName: "HsuBoBo", lineName: "富邦-Shawn(小逸)", baseJob: "刺客", subJob: "敏爆", role: "輸出", rank: "成員", intro: "" },
+    { id: "m39", gameName: "該獵戶已夜梟", lineName: "成成", baseJob: "獵人", subJob: "鳥", role: "待定", rank: "成員", intro: "待領養孤兒" },
+    { id: "m40", gameName: "歐洲獨角獸", lineName: "魏駿翔", baseJob: "流氓", subJob: "輸出", role: "待定", rank: "成員", intro: "" },
+    { id: "m41", gameName: "水蜜桃王", lineName: "Louie", baseJob: "獵人", subJob: "鳥", role: "輸出", rank: "成員", intro: "櫻花表弟" },
+    { id: "m42", gameName: "潘朵拉企鵝", lineName: "Keith-匠屋空間工作室", baseJob: "流氓", subJob: "脫裝", role: "輸出", rank: "成員", intro: "待領養孤兒, 我喜歡大叔" },
+    { id: "m43", gameName: "白非羽", lineName: "明", baseJob: "槍手", subJob: "一般", role: "輔助", rank: "成員", intro: "待領養孤兒" },
+    { id: "m44", gameName: "Weilin", lineName: "中古車採購 威霖", baseJob: "待定", subJob: "待定", role: "待定", rank: "成員", intro: "" },
+    { id: "m45", gameName: "蝸牛丶", lineName: "江", baseJob: "獵人", subJob: "鳥", role: "輸出", rank: "成員", intro: "" },
+    { id: "m46", gameName: "三十九度八", lineName: "ZhenYun", baseJob: "神官", subJob: "讚美", role: "輔助", rank: "成員", intro: "待領養孤兒" },
+    { id: "m47", gameName: "提摩丶", lineName: "小寶", baseJob: "獵人", subJob: "鳥", role: "輸出", rank: "成員", intro: "待領養孤兒" },
+    { id: "m48", gameName: "珮可", lineName: "張誌恒", baseJob: "神官", subJob: "讚美", role: "輔助", rank: "成員", intro: "待領養孤兒" },
+    { id: "m49", gameName: "哈啾", lineName: "哈啾", baseJob: "待定", subJob: "待定", role: "待定", rank: "成員", intro: "哈啾本哈" },
+    { id: "m50", gameName: "長歌恨", lineName: "丫鵬", baseJob: "獵人", subJob: "鳥", role: "待定", rank: "成員", intro: "" },
+    { id: "m51", gameName: "嘎拉", lineName: "Agera", baseJob: "騎士", subJob: "敏爆", role: "待定", rank: "成員", intro: "待領養孤兒" },
+    { id: "m52", gameName: "老婆幫我儲一單", lineName: "許竣凱", baseJob: "十字軍", subJob: "坦", role: "坦", rank: "成員", intro: "" },
+    { id: "m53", gameName: "冬天君", lineName: "Wei", baseJob: "獵人", subJob: "鳥", role: "坦", rank: "成員", intro: "待領養孤兒" },
+    { id: "m54", gameName: "啤酒香煙法力無邊", lineName: "Randy", baseJob: "十字軍", subJob: "坦", role: "坦", rank: "成員", intro: "" },
+    { id: "m55", gameName: "批星戴月", lineName: "隆", baseJob: "刺客", subJob: "毒", role: "輸出", rank: "成員", intro: "大白鯊的朋友" },
+    { id: "m56", gameName: "139", lineName: "汪", baseJob: "槍手", subJob: "一般", role: "輸出", rank: "成員", intro: "" },
+    { id: "m57", gameName: "靈刀灰休", lineName: "Jimmy Chou", baseJob: "待定", subJob: "待定", role: "待定", rank: "成員", intro: "" },
+    { id: "m58", gameName: "陳冠希", lineName: "gary", baseJob: "獵人", subJob: "鳥", role: "輸出", rank: "成員", intro: "大白鯊的朋友" },
+    { id: "m59", gameName: "南門小皮", lineName: "Eric", baseJob: "刺客", subJob: "敏爆", role: "輸出", rank: "成員", intro: "" },
+    { id: "m60", gameName: "Lucia", lineName: "", baseJob: "刺客", subJob: "敏爆", role: "輸出", rank: "成員", intro: "" },
+    { id: "m61", gameName: "冷炩兒", lineName: "恩蓉MoMo", baseJob: "待定", subJob: "待定", role: "待定", rank: "成員", intro: "" },
+    { id: "m62", gameName: "貓窩下的星空", lineName: "GcJie", baseJob: "槍手", subJob: "一般", role: "輸出", rank: "成員", intro: "待領養孤兒" },
+    { id: "m63", gameName: "青川", lineName: "Sean Liou", baseJob: "獵人", subJob: "鳥", role: "輸出", rank: "成員", intro: "" },
+    { id: "m64", gameName: "初蕾丶", lineName: "🐰", baseJob: "神官", subJob: "讚美", role: "輔助", rank: "成員", intro: "" },
+    { id: "m65", gameName: "碧空炎冰", lineName: "阿賢", baseJob: "槍手", subJob: "一般", role: "輸出", rank: "成員", intro: "" },
+    { id: "m66", gameName: "熊熊很大", lineName: "仲軒", baseJob: "法師", subJob: "隕石", role: "輸出", rank: "成員", intro: "" },
+    { id: "m67", gameName: "小波", lineName: "航", baseJob: "獵人", subJob: "鳥", role: "輸出", rank: "成員", intro: "" },
+    { id: "m68", gameName: "Pogin", lineName: "Pogin", baseJob: "詩人", subJob: "一般", role: "輔助", rank: "成員", intro: "待領養孤兒, 哈啾老公" },
+    { id: "m69", gameName: "", lineName: "咩假屁謀", baseJob: "待定", subJob: "待定", role: "待定", rank: "成員", intro: "" },
+    { id: "m70", gameName: "果仔", lineName: "廖琮昱", baseJob: "賢者", subJob: "一般", role: "待定", rank: "成員", intro: "" },
+    { id: "m71", gameName: "daliesi", lineName: "鍾豐年", baseJob: "刺客", subJob: "毒", role: "輔助", rank: "成員", intro: "" },
+    { id: "m72", gameName: "星夜", lineName: "蔡家昕", baseJob: "刺客", subJob: "毒", role: "輸出", rank: "成員", intro: "睡神無敵小弟" },
+    { id: "m73", gameName: "狗是水鏡", lineName: "NICK", baseJob: "流氓", subJob: "輸出", role: "輸出", rank: "成員", intro: "" }
 ];
-
-const JOB_STRUCTURE = {
-    "騎士": ["龍", "敏爆", "其他"], "十字軍": ["坦", "輸出", "其他"], "鐵匠": ["戰鐵", "鍛造", "其他"], "煉金": ["一般", "其他"],
-    "獵人": ["鳥", "陷阱", "AD", "其他"], "詩人": ["輔助", "輸出", "其他"], "舞孃": ["輔助", "輸出", "其他"],
-    "神官": ["讚美", "驅魔", "暴牧", "其他"], "武僧": ["連技", "阿修", "其他"], "巫師": ["隕石", "冰雷", "其他"],
-    "賢者": ["輔助", "法系", "其他"], "刺客": ["敏爆", "毒", "雙刀", "其他"], "流氓": ["脫裝", "輸出", "弓", "其他"],
-    "槍手": ["一般", "其他"], "初心者": ["超級初心者", "其他"]
-};
-
-// 這是原始排序依據，請保持此順序
-const SEED_DATA = [
-    { id: "m01", lineName: "poppy🐶", gameName: "YT清燉小羔羊", mainClass: "神官(讚美)", role: "輔助", rank: "會長", intro: "公會唯一清流 出淤泥而不染" },
-    { id: "m02", lineName: "#Yuan", gameName: "沐沐", mainClass: "神官(讚美)", role: "輔助", rank: "資料管理員", intro: "" },
-    { id: "m03", lineName: "Lam 🦄", gameName: "孤芳自賞", mainClass: "獵人(陷阱)", role: "輸出", rank: "成員", intro: "" },
-    { id: "m04", lineName: "alan", gameName: "小櫻花", mainClass: "武僧", role: "輔助", rank: "成員", intro: "待領養孤兒" },
-    { id: "m05", lineName: "董宜坤", gameName: "去去彈匣清空", mainClass: "槍手", role: "輸出", rank: "成員", intro: "" },
-    { id: "m06", lineName: "阿智", gameName: "恐龍跌倒", mainClass: "獵人(鳥)", role: "待定", rank: "成員", intro: "待領養孤兒" },
-    { id: "m07", lineName: "佳慶", gameName: "襪子髒髒", mainClass: "神官(讚美)", role: "輔助", rank: "成員", intro: "" },
-    { id: "m08", lineName: "騰億", gameName: "魅力四射", mainClass: "獵人(鳥)", role: "待定", rank: "成員", intro: "" },
-    { id: "m09", lineName: "Xian", gameName: "沐瑀", mainClass: "", role: "待定", rank: "成員", intro: "" },
-    { id: "m10", lineName: "咘小欣", gameName: "貓二", mainClass: "", role: "待定", rank: "成員", intro: "" },
-    { id: "m11", lineName: "奕雲", gameName: "奕雲", mainClass: "", role: "待定", rank: "成員", intro: "" },
-    { id: "m12", lineName: "宇", gameName: "崔月月", mainClass: "獵人(鳥)", role: "輸出", rank: "成員", intro: "" },
-    { id: "m13", lineName: "宏", gameName: "魔魂大白鯊", mainClass: "獵人(鳥)", role: "輸出", rank: "成員", intro: "" },
-    { id: "m14", lineName: "🐬", gameName: "貝席兒", mainClass: "煉金", role: "待定", rank: "成員", intro: "待領養孤兒" },
-    { id: "m15", lineName: "賀", gameName: "渺渺喵", mainClass: "", role: "待定", rank: "成員", intro: "" },
-    { id: "m16", lineName: "鄒昀諭YunYuZou", gameName: "馬爾科姆", mainClass: "獵人(鳥)", role: "待定", rank: "成員", intro: "5678不同爸爸" },
-    { id: "m17", lineName: "黑輪呦", gameName: "香菜佐黑輪", mainClass: "", role: "待定", rank: "成員", intro: "" },
-    { id: "m18", lineName: "Peng", gameName: "棨棨", mainClass: "十字軍(坦)", role: "坦", rank: "成員", intro: "Здравствуйте ! как дела ?" },
-    { id: "m19", lineName: "江承峻", gameName: "開喜婆婆", mainClass: "", role: "待定", rank: "成員", intro: "" },
-    { id: "m20", lineName: "妃Fei ", gameName: "FeiFei ", mainClass: "法師(隕)", role: "輸出", rank: "成員", intro: "" },
-    { id: "m21", lineName: "古銘", gameName: "卉香", mainClass: "刺客(敏爆)", role: "輸出", rank: "成員", intro: "" },
-    { id: "m22", lineName: "傑森", gameName: "傑森七七", mainClass: "神官(讚美)", role: "輔助", rank: "成員", intro: "" },
-    { id: "m23", lineName: "陳嘉圻", gameName: "陳小圻", mainClass: "獵人(鳥)", role: "輸出", rank: "成員", intro: "大白鯊的朋友" },
-    { id: "m24", lineName: "Leo", gameName: "藤井樹", mainClass: "法師(隕)", role: "輸出", rank: "成員", intro: "" },
-    { id: "m25", lineName: "小涵", gameName: "妞妞甜八寶", mainClass: "神官(讚美)", role: "輔助", rank: "成員", intro: "大白鯊的母奶" },
-    { id: "m26", lineName: "星野悠（ホシノユウ）", gameName: "", mainClass: "鐵匠", role: "待定", rank: "成員", intro: "" },
-    { id: "m27", lineName: "浩", gameName: "YT泰愛玩遊戲直bo", mainClass: "槍手", role: "輸出", rank: "成員", intro: "" },
-    { id: "m28", lineName: "六六", gameName: "六六", mainClass: "十字軍(坦)", role: "坦", rank: "成員", intro: "" },
-    { id: "m29", lineName: "灬森灬", gameName: "大雄", mainClass: "槍手", role: "輸出", rank: "成員", intro: "待領養孤兒" },
-    { id: "m30", lineName: "陳小貓", gameName: "貓璃", mainClass: "刺客", role: "輸出", rank: "成員", intro: "睡神無敵朋友" },
-    { id: "m31", lineName: "pei.yu.yang", gameName: "迪卡普歐", mainClass: "鐵匠", role: "待定", rank: "成員", intro: "睡神無敵麻吉" },
-    { id: "m32", lineName: "A-Wei 黃執維", gameName: "睡神無敵", mainClass: "獵人(鳥)", role: "輸出", rank: "成員", intro: "睡神就是無敵" },
-    { id: "m33", lineName: "阿揚", gameName: "牧牧", mainClass: "槍手", role: "輸出", rank: "成員", intro: "待領養孤兒" },
-    { id: "m34", lineName: "徐小宏🖖🏼", gameName: "莫忘中出", mainClass: "槍手", role: "輸出", rank: "成員", intro: "" },
-    { id: "m35", lineName: "Wang", gameName: "極度", mainClass: "法師(念)", role: "輸出", rank: "成員", intro: "" },
-    { id: "m36", lineName: "Ryan", gameName: "水鏡是條狗", mainClass: "", role: "待定", rank: "成員", intro: "" },
-    { id: "m37", lineName: "兩廣寬", gameName: "新竹房仲兩廣", mainClass: "賢者", role: "輔助", rank: "成員", intro: "" },
-    { id: "m38", lineName: "富邦-Shawn(小逸)", gameName: "HsuBoBo", mainClass: "刺客(敏爆)", role: "輸出", rank: "成員", intro: "" },
-    { id: "m39", lineName: "成成", gameName: "該獵戶已夜梟", mainClass: "獵人(鳥)", role: "待定", rank: "成員", intro: "待領養孤兒" },
-    { id: "m40", lineName: "魏駿翔", gameName: "歐洲獨角獸", mainClass: "流氓(輸出)", role: "待定", rank: "成員", intro: "" },
-    { id: "m41", lineName: "Louie", gameName: "水蜜桃王", mainClass: "獵人(鳥)", role: "輸出", rank: "成員", intro: "櫻花表弟" },
-    { id: "m42", lineName: "Keith-匠屋空間工作室", gameName: "潘朵拉企鵝", mainClass: "流氓(脫裝)", role: "輸出", rank: "成員", intro: "待領養孤兒, 我喜歡大叔" },
-    { id: "m43", lineName: "明", gameName: "白非羽", mainClass: "槍手", role: "輔助", rank: "成員", intro: "待領養孤兒" },
-    { id: "m44", lineName: "中古車採購 威霖", gameName: "Weilin", mainClass: "", role: "待定", rank: "成員", intro: "" },
-    { id: "m45", lineName: "江", gameName: "蝸牛丶", mainClass: "獵人(鳥)", role: "輸出", rank: "成員", intro: "" },
-    { id: "m46", lineName: "ZhenYun", gameName: "三十九度八", mainClass: "神官(讚美)", role: "輔助", rank: "成員", intro: "待領養孤兒" },
-    { id: "m47", lineName: "小寶", gameName: "提摩丶", mainClass: "獵人(鳥)", role: "輸出", rank: "成員", intro: "待領養孤兒" },
-    { id: "m48", lineName: "張誌恒", gameName: "珮可", mainClass: "神官(讚美)", role: "輔助", rank: "成員", intro: "待領養孤兒" },
-    { id: "m49", lineName: "哈啾", gameName: "哈啾", mainClass: "", role: "待定", rank: "成員", intro: "哈啾本哈" },
-    { id: "m50", lineName: "丫鵬", gameName: "長歌恨", mainClass: "獵人(鳥)", role: "待定", rank: "成員", intro: "" },
-    { id: "m51", lineName: "Agera", gameName: "嘎拉", mainClass: "騎士(敏爆)", role: "待定", rank: "成員", intro: "待領養孤兒" },
-    { id: "m52", lineName: "許竣凱", gameName: "老婆幫我儲一單", mainClass: "十字軍(坦)", role: "坦", rank: "成員", intro: "" },
-    { id: "m53", lineName: "Wei", gameName: "冬天君", mainClass: "獵人(鳥)", role: "坦", rank: "成員", intro: "待領養孤兒" },
-    { id: "m54", lineName: "Randy", gameName: "啤酒香煙法力無邊", mainClass: "十字軍(坦)", role: "坦", rank: "成員", intro: "" },
-    { id: "m55", lineName: "隆", gameName: "批星戴月", mainClass: "刺客(毒)", role: "輸出", rank: "成員", intro: "大白鯊的朋友" },
-    { id: "m56", lineName: "汪", gameName: "139", mainClass: "槍手", role: "輸出", rank: "成員", intro: "" },
-    { id: "m57", lineName: "Jimmy Chou", gameName: "靈刀灰休", mainClass: "", role: "待定", rank: "成員", intro: "" },
-    { id: "m58", lineName: "gary", gameName: "陳冠希", mainClass: "獵人(鳥)", role: "輸出", rank: "成員", intro: "大白鯊的朋友" },
-    { id: "m59", lineName: "Eric", gameName: "南門小皮", mainClass: "刺客(敏爆)", role: "輸出", rank: "成員", intro: "" },
-    { id: "m60", lineName: "", gameName: "Lucia", mainClass: "刺客(敏爆)", role: "輸出", rank: "成員", intro: "" },
-    { id: "m61", lineName: "恩蓉MoMo", gameName: "冷炩兒", mainClass: "", role: "待定", rank: "成員", intro: "" },
-    { id: "m62", lineName: "GcJie", gameName: "貓窩下的星空", mainClass: "槍手", role: "輸出", rank: "成員", intro: "待領養孤兒" },
-    { id: "m63", lineName: "Sean Liou", gameName: "青川", mainClass: "獵人(鳥)", role: "輸出", rank: "成員", intro: "" },
-    { id: "m64", lineName: "🐰", gameName: "初蕾丶", mainClass: "神官(讚美)", role: "輔助", rank: "成員", intro: "" },
-    { id: "m65", lineName: "阿賢", gameName: "碧空炎冰", mainClass: "槍手", role: "輸出", rank: "成員", intro: "" },
-    { id: "m66", lineName: "仲軒", gameName: "熊熊很大", mainClass: "法師(隕)", role: "輸出", rank: "成員", intro: "" },
-    { id: "m67", lineName: "航", gameName: "小波", mainClass: "獵人(鳥)", role: "輸出", rank: "成員", intro: "" },
-    { id: "m68", lineName: "Pogin", gameName: "Pogin", mainClass: "詩人", role: "輔助", rank: "成員", intro: "待領養孤兒, 哈啾老公" },
-    { id: "m69", lineName: "咩假屁謀", gameName: "", mainClass: "", role: "待定", rank: "成員", intro: "" },
-    { id: "m70", lineName: "廖琮昱", gameName: "果仔", mainClass: "賢者", role: "待定", rank: "成員", intro: "" },
-    { id: "m71", lineName: "鍾豐年", gameName: "daliesi", mainClass: "刺客(毒)", role: "輔助", rank: "成員", intro: "" },
-    { id: "m72", lineName: "蔡家昕", gameName: "星夜", mainClass: "刺客(毒)", role: "輸出", rank: "成員", intro: "睡神無敵小弟" },
-    { id: "m73", lineName: "NICK", gameName: "狗是水鏡", mainClass: "流氓(輸出)", role: "輸出", rank: "成員", intro: "" }
-];
-
-const SEED_GROUPS = [];
-const SEED_ACTIVITIES = [];
-const APP_VERSION = '7.5';
-
-window.AppConfig = {
-    FIREBASE_CONFIG,
-    APP_ENV,
-    COLLECTION_NAMES,
-    JOB_STYLES,
-    JOB_STRUCTURE,
-    SEED_DATA,
-    SEED_GROUPS,
-    SEED_ACTIVITIES,
-    APP_VERSION
-};

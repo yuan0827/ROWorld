@@ -1,4 +1,5 @@
-import { jobData } from './config.js';
+// js/app.js
+import { jobData, firebaseConfig, initialMembers } from './config.js';
 
 const app = {
     data: {
@@ -24,14 +25,23 @@ const app = {
     },
 
     loadFirebaseConfig() {
-        const savedConfig = localStorage.getItem('ro_firebase_config');
-        if (savedConfig) {
+        // 優先讀取 LocalStorage 的設定
+        let config = localStorage.getItem('ro_firebase_config');
+        
+        // 如果沒有，則使用 config.js 裡面的預設值 (您提供的)
+        if (!config && firebaseConfig) {
+            config = JSON.stringify(firebaseConfig);
+            // 存入 LocalStorage 以便之後編輯
+            localStorage.setItem('ro_firebase_config', config);
+        }
+
+        if (config) {
             try {
-                const config = JSON.parse(savedConfig);
-                firebase.initializeApp(config);
+                const parsedConfig = JSON.parse(config);
+                firebase.initializeApp(parsedConfig);
                 this.db = firebase.firestore();
                 this.setupRealtimeListener();
-                document.getElementById('firebaseConfigInput').value = JSON.stringify(config, null, 2);
+                document.getElementById('firebaseConfigInput').value = JSON.stringify(parsedConfig, null, 2);
             } catch (e) {
                 console.error("Firebase init failed:", e);
                 this.loadLocalData();
@@ -49,7 +59,14 @@ const app = {
             if (doc.exists) {
                 this.data = doc.data();
                 if (!this.data.history) this.data.history = []; 
+                // 防止資料庫為空時沒有成員
+                if ((!this.data.members || this.data.members.length === 0) && initialMembers) {
+                     console.log("Database empty, merging initial members...");
+                     this.data.members = initialMembers;
+                }
             } else {
+                // 文檔不存在，使用預設資料初始化
+                if (initialMembers) this.data.members = initialMembers;
                 this.saveData(); 
             }
             this.renderAll();
@@ -64,7 +81,15 @@ const app = {
 
     loadLocalData() {
         const local = localStorage.getItem('ro_guild_data');
-        if (local) this.data = JSON.parse(local);
+        if (local) {
+            this.data = JSON.parse(local);
+        } else {
+            // 如果連本地都沒資料，就載入 config.js 裡的 73 人
+            if (initialMembers) {
+                this.data.members = [...initialMembers];
+                this.showToast('已載入預設 73 位成員');
+            }
+        }
         if (!this.data.history) this.data.history = [];
         this.renderAll();
     },
