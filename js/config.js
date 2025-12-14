@@ -1,15 +1,25 @@
-// js/config.js
-// Production v5.6 - 補回缺失的 COLLECTION_NAMES (修復 TypeError)
+// js/config.js - 最終完整版 (v5.7)
 
 window.AppConfig = {
-    // 1. 資料庫集合名稱 (原本缺漏這段，導致 app.js 崩潰)
+    // 1. 資料庫集合名稱 (程式運作核心)
     COLLECTION_NAMES: {
         MEMBERS: 'members',
         GROUPS: 'groups',
         ACTIVITIES: 'activities'
     },
 
-    // 2. 職業結構
+    // 2. Firebase 設定
+    FIREBASE_CONFIG: {
+        apiKey: "AIzaSyCxVEcgftiu7qmHhgLV-XaLzf6naBhaf-k",
+        authDomain: "ro123-aae1e.firebaseapp.com",
+        projectId: "ro123-aae1e",
+        storageBucket: "ro123-aae1e.firebasestorage.app",
+        messagingSenderId: "401692984816",
+        appId: "1:401692984816:web:711dacb2277b52fb7d0935",
+        measurementId: "G-SVYZGQZB83"
+    },
+
+    // 3. 職業結構
     JOB_STRUCTURE: {
         "騎士": ["龍", "敏爆", "其他"],
         "十字軍": ["坦", "輸出", "其他"],
@@ -30,18 +40,7 @@ window.AppConfig = {
         "待定": ["待定"]
     },
 
-    // 3. Firebase 設定
-    FIREBASE_CONFIG: {
-        apiKey: "AIzaSyCxVEcgftiu7qmHhgLV-XaLzf6naBhaf-k",
-        authDomain: "ro123-aae1e.firebaseapp.com",
-        projectId: "ro123-aae1e",
-        storageBucket: "ro123-aae1e.firebasestorage.app",
-        messagingSenderId: "401692984816",
-        appId: "1:401692984816:web:711dacb2277b52fb7d0935",
-        measurementId: "G-SVYZGQZB83"
-    },
-
-    // 4. 職業樣式
+    // 4. 職業樣式 (卡片顏色)
     JOB_STYLES: [
         { key: ['騎士'], class: 'bg-job-knight', icon: 'fa-shield-alt' },
         { key: ['十字軍'], class: 'bg-job-crusader', icon: 'fa-shield-alt' },
@@ -61,7 +60,7 @@ window.AppConfig = {
         { key: ['初心者', '待定'], class: 'bg-job-default', icon: 'fa-user' }
     ],
 
-    // 4. 初始成員資料 (原 initialMembers，改名並格式化以配合 app.js)
+    // 5. 初始成員資料
     SEED_DATA: [
         { id: "m01", gameName: "YT清燉小羔羊", lineName: "poppy🐶", baseJob: "神官", subJob: "讚美", role: "輔助", rank: "會長", intro: "公會唯一清流 出淤泥而不染" },
         { id: "m02", gameName: "沐沐", lineName: "#Yuan", baseJob: "神官", subJob: "讚美", role: "輔助", rank: "資料管理員", intro: "" },
@@ -147,7 +146,7 @@ window.AppConfig = {
         intro: m.intro
     })),
     
-    // 5. 預留欄位
+    // 6. 預留欄位
     SEED_GROUPS: [],
     SEED_ACTIVITIES: []
 };
