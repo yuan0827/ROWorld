@@ -1,5 +1,5 @@
 // js/app.js
-// Production v7.2 - Fix GVG Lights Missing (Inline Tailwind) & Maintain Layout
+// Production v9.0 - Fix GVG Lights (Direct Tailwind) & UI Fixes
 
 // 1. 強制檢查 Config
 if (typeof window.AppConfig === 'undefined') {
@@ -743,3 +743,4 @@ const App = {
 
 window.app = App;
 document.addEventListener('DOMContentLoaded', () => App.init());
+}
