@@ -1,4 +1,4 @@
-// js/app.js - v10.5 Super Compact Export & Strict 5-Member Limit
+// js/app.js - v10.6 Leader Always First in Export
 
 // 1. 強制檢查 Config
 if (typeof window.AppConfig === 'undefined') {
@@ -544,13 +544,13 @@ const App = {
             document.getElementById('squadAssignment').value = g.assignment || ''; 
             document.getElementById('deleteSquadBtnContainer').innerHTML = `<button type="button" onclick="app.deleteSquad('${id}')" class="text-red-500 text-sm hover:underline">解散</button>`;
             this.currentSquadMembers = g.members.map(m => typeof m === 'string' ? {id: m, status: 'pending'} : m);
-            this.updateLeaderOptions(); const leaderSelect = document.getElementById('squadLeader'); if(leaderSelect) leaderSelect.value = g.leaderId || "";
+            this.renderSquadMemberSelect(); this.updateLeaderOptions(); const leaderSelect = document.getElementById('squadLeader'); if(leaderSelect) leaderSelect.value = g.leaderId || "";
         } else {
             document.getElementById('squadName').setAttribute('data-current-val', '');
             document.getElementById('squadNote').value = ''; 
             document.getElementById('squadAssignment').value = ''; 
             document.getElementById('deleteSquadBtnContainer').innerHTML = ''; 
-            this.currentSquadMembers = []; 
+            this.currentSquadMembers = []; this.renderSquadMemberSelect();
         }
         
         // 渲染隊伍名稱選單 (必須在設定完 Date/Subject 後執行)
@@ -801,7 +801,7 @@ const App = {
         this.toggleWinnerSelection(winner.id);
     },
 
-    // [New] 匯出總覽圖表 - 支援工作分配分組 & 橫向佈局 (Row-based)
+    // [Updated] 匯出總覽圖表 - 極致垂直壓縮 (Super Compact for One-Screen Shot)
     openSummaryModal: function() {
         const date = this.currentSquadDateFilter;
         const subject = this.currentSquadSubjectFilter;
@@ -848,26 +848,36 @@ const App = {
         document.getElementById('summaryDate').innerHTML = `<i class="far fa-calendar-alt mr-1"></i>${date}`;
         document.getElementById('summarySubject').innerHTML = `<i class="fas fa-tag mr-1"></i>${subject}`;
 
-        // 4. Render Grid with Row Layout
+        // 4. Render Grid with Minimal Spacing
         const grid = document.getElementById('summaryGrid');
-        grid.className = "flex flex-col gap-1"; // Change to flex col for full width rows
+        grid.className = "flex flex-col gap-1"; // Minimal gap between sections
         let htmlContent = '';
 
         sortedKeys.forEach(key => {
-            // Full Width Row Container
+            // Full Width Row Container with minimal padding
             htmlContent += `
-                <div class="w-full mb-1 border border-slate-300 rounded overflow-hidden">
+                <div class="w-full mb-0.5 border border-slate-300 rounded overflow-hidden">
                     <div class="bg-indigo-900 text-white px-2 py-0.5 font-bold text-sm text-center shadow-sm tracking-widest">
                         ${key}
                     </div>
-                    <div class="p-1 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-1 bg-slate-50">
+                    <div class="p-0.5 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-0.5 bg-slate-50">
             `;
 
-            // Render Squads horizontally within this row
+            // Render Squads
             grouped[key].forEach((g, index) => {
                 const headerColor = index % 2 === 0 ? 'bg-amber-100 border-amber-200 text-amber-900' : 'bg-emerald-100 border-emerald-200 text-emerald-900';
                 
-                const memberList = (g.members || []).map(m => {
+                // [Leader Sort Logic]
+                let sortedMembers = [...(g.members || [])];
+                sortedMembers.sort((a, b) => {
+                    const idA = typeof a === 'string' ? a : a.id;
+                    const idB = typeof b === 'string' ? b : b.id;
+                    if (idA === g.leaderId) return -1;
+                    if (idB === g.leaderId) return 1;
+                    return 0;
+                });
+
+                const memberList = sortedMembers.map(m => {
                     const id = typeof m === 'string' ? m : m.id;
                     const mem = this.members.find(x => x.id === id);
                     if (!mem) return '';
@@ -883,18 +893,18 @@ const App = {
                     }
                     const leaveClass = (typeof m === 'object' && m.status === 'leave') ? 'line-through text-slate-400 decoration-slate-400' : leaderClass;
 
-                    return `<div class="py-0.5 px-0 border-b border-slate-200 last:border-0 text-sm text-center ${leaveClass} flex justify-center items-center truncate leading-tight h-[24px] tracking-wide w-full">
+                    return `<div class="py-0.5 px-0 border-b border-slate-200 last:border-0 text-sm text-center ${leaveClass} flex justify-center items-center truncate leading-tight h-[22px] tracking-wide w-full">
                         ${leaderIcon} ${mem.gameName}${subText}
                     </div>`;
                 }).join('');
 
                 const emptyRows = 5 - (g.members || []).length;
                 let emptyHtml = '';
-                if (emptyRows > 0) { for(let i=0; i<emptyRows; i++) { emptyHtml += `<div class="py-0.5 px-0 border-b border-slate-200 last:border-0 h-[24px]"></div>`; } }
+                if (emptyRows > 0) { for(let i=0; i<emptyRows; i++) { emptyHtml += `<div class="py-0.5 px-0 border-b border-slate-200 last:border-0 h-[22px]"></div>`; } }
 
                 htmlContent += `
                 <div class="bg-white border border-slate-300 flex flex-col shadow-sm rounded-sm overflow-hidden w-full">
-                    <div class="${headerColor} py-0.5 text-center font-black text-sm border-b border-slate-300 tracking-wider truncate px-1">
+                    <div class="${headerColor} py-0.5 text-center font-black text-xs border-b border-slate-300 tracking-wider truncate px-1 h-[22px] flex items-center justify-center">
                         ${g.name}
                     </div>
                     <div class="divide-y divide-slate-200">
