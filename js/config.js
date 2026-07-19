@@ -1,4 +1,4 @@
-// js/config.js - 最終修正版 (v5.8)
+// js/config.js - 最終修正版 (v5.8) + 新增德魯伊
 
 window.AppConfig = {
     // 1. 資料庫集合名稱 (這段最重要，缺了會報錯)
@@ -37,6 +37,7 @@ window.AppConfig = {
         "槍手": ["一般", "其他"],
         "法師": ["隕石", "冰雷", "念", "其他"],
         "初心者": ["超級初心者", "其他"],
+        "德魯伊": ["狼人", "鳥人", "法師"],
         "待定": ["待定"]
     },
 
@@ -57,6 +58,7 @@ window.AppConfig = {
         { key: ['煉金'], class: 'bg-job-alchemist', icon: 'fa-flask' },
         { key: ['刺客'], class: 'bg-job-assassin', icon: 'fa-user-ninja' },
         { key: ['流氓'], class: 'bg-job-rogue', icon: 'fa-mask' },
+        { key: ['德魯伊'], class: 'bg-job-druid', icon: 'fa-leaf' },
         { key: ['初心者', '待定'], class: 'bg-job-default', icon: 'fa-user' }
     ],
 
